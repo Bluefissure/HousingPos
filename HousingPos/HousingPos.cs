@@ -26,12 +26,12 @@ namespace HousingPos
         public PluginUi Gui { get; private set; }
         public DalamudPluginInterface Interface { get; private set; }
         public Configuration Config { get; private set; }
-        public OffsetDefinition Offset { get; private set; }
+        public OpcodeDefinition Opcode { get; private set; }
+        public CommandManager CommandManager = null;
         public SigScanner Scanner { get; private set; }
         public void Dispose()
         {
             Config.PlaceAnywhere = false;
-            PlaceAnywhere();
             Interface.Framework.Network.OnNetworkMessage -= OnNetwork;
             Interface.CommandManager.RemoveHandler("/xhouse");
             Gui?.Dispose();
@@ -41,6 +41,7 @@ namespace HousingPos
         public void Initialize(DalamudPluginInterface pluginInterface)
         {
             Interface = pluginInterface;
+            CommandManager = pluginInterface.CommandManager;
             Scanner = Interface.TargetModuleScanner;
             Config = pluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
             Config.Initialize(pluginInterface);
@@ -55,15 +56,14 @@ namespace HousingPos
         }
         public void Initialize()
         {
-            PlaceAnywhere();
         }
         public void LoadOffset()
         {
-            string OffsetFilePath = Path.Combine(Assembly.GetExecutingAssembly().Location, "../offset.json");
-            Offset = JsonConvert.DeserializeObject<OffsetDefinition>(File.ReadAllText(OffsetFilePath));
+            string OpcodeFilePath = Path.Combine(Assembly.GetExecutingAssembly().Location, "../opcode.json");
+            Opcode = JsonConvert.DeserializeObject<OpcodeDefinition>(File.ReadAllText(OpcodeFilePath));
             var verFilePath = Path.Combine(Scanner.Module.FileName, "../ffxivgame.ver");
             var gameVer = File.ReadAllText(verFilePath);
-            if (gameVer.Trim() != Offset.ExeVersion.Trim())
+            if (gameVer.Trim() != Opcode.ExeVersion.Trim())
             {
                 string message = $"Unsupported game version: {gameVer}";
                 LogError(message);
@@ -96,73 +96,10 @@ namespace HousingPos
             Interface.Framework.Gui.Chat.PrintError(msg);
         }
 
-        public bool PlaceAnywhere()
-        {
-            IntPtr baseAddr = Scanner.Module.BaseAddress;
-            int placeAnywhereOff = Int32.Parse(Offset.PlaceAnywhere, NumberStyles.HexNumber);
-            IntPtr placeAnywhereAddr = baseAddr + placeAnywhereOff;
-            int wallPartitionOff = Int32.Parse(Offset.WallPartition, NumberStyles.HexNumber);
-            IntPtr wallPartitionAddr = baseAddr + wallPartitionOff;
-            if (Config.PlaceAnywhere)
-            {
-                Memory.Write(placeAnywhereAddr, new byte[] { 1 });
-                Memory.Write(wallPartitionAddr, new byte[] { 1 });
-            }
-            else
-            {
-                Memory.Write(placeAnywhereAddr, new byte[] { 0 });
-                Memory.Write(wallPartitionAddr, new byte[] { 0 });
-            }
-            return Config.PlaceAnywhere;
-        }
-
-        public void ReadPrePosition()
-        {
-            IntPtr baseAddr = Scanner.Module.BaseAddress;
-            int prePositionOff = Int32.Parse(Offset.PrePositionBase, NumberStyles.HexNumber);
-            IntPtr prePositionAddr = baseAddr + prePositionOff;
-            int[] offList = Offset.PrePositionOffset.Split(',').Select( off => Int32.Parse(off, NumberStyles.HexNumber)).ToArray();
-            foreach (var off in offList)
-            {
-                prePositionAddr = Marshal.ReadIntPtr(prePositionAddr);
-                prePositionAddr += off;
-            }
-            byte[] posArr = new byte[12];
-            Marshal.Copy(prePositionAddr, posArr, 0, 12);
-            var x = BitConverter.ToSingle(posArr, 0);
-            var y = BitConverter.ToSingle(posArr, 4);
-            var z = BitConverter.ToSingle(posArr, 8);
-            Config.PlaceX = x;
-            Config.PlaceY = y;
-            Config.PlaceZ = z;
-            Config.Save();
-        }
-
-        public void WritePrePosition()
-        {
-            IntPtr baseAddr = Scanner.Module.BaseAddress;
-            int prePositionOff = Int32.Parse(Offset.PrePositionBase, NumberStyles.HexNumber);
-            IntPtr prePositionAddr = baseAddr + prePositionOff;
-            int[] offList = Offset.PrePositionOffset.Split(',').Select(off => Int32.Parse(off, NumberStyles.HexNumber)).ToArray();
-            foreach (var off in offList)
-            {
-                prePositionAddr = Marshal.ReadIntPtr(prePositionAddr);
-                prePositionAddr += off;
-            }
-            byte[] posArr = new byte[12];
-            byte[] bx = BitConverter.GetBytes(Config.PlaceX);
-            bx.CopyTo(posArr, 0);
-            byte[] by = BitConverter.GetBytes(Config.PlaceY);
-            by.CopyTo(posArr, 4);
-            byte[] bz = BitConverter.GetBytes(Config.PlaceZ);
-            bz.CopyTo(posArr, 8);
-            Memory.Write(prePositionAddr, posArr);
-        }
-
         public void OnNetwork(IntPtr dataPtr, ushort opCode, uint sourceActorId, uint targetActorId, NetworkMessageDirection direction)
         {
-            var OpcodeLoadHousing = Int32.Parse(Offset.LoadHousing, NumberStyles.HexNumber);
-            var OpcodeMoveItem = Int32.Parse(Offset.MoveItem, NumberStyles.HexNumber);
+            var OpcodeLoadHousing = Int32.Parse(Opcode.LoadHousing, NumberStyles.HexNumber);
+            var OpcodeMoveItem = Int32.Parse(Opcode.MoveItem, NumberStyles.HexNumber);
             if (direction == NetworkMessageDirection.ZoneDown)
             {
                 if (opCode != OpcodeLoadHousing || !Config.Recording)
@@ -236,7 +173,6 @@ namespace HousingPos
                 Marshal.Copy(posArr, 0, dataPtr, 28);
                 Config.ForceMove = false;
                 Config.Save();
-                WritePrePosition();
             }
         }
     }

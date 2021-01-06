@@ -31,15 +31,16 @@ namespace HousingPos.Gui
             zh.Add("Language:", "语言:");
             zh.Add("Change the UI Language.", "改变界面语言。");
             zh.Add("Force Move", "强制移动");
-            zh.Add("First: select an item and place it to an arbitrary position, this checkbox will be turned off.\n" +
-                    "Second: with sync position enabled, select it again and cancel placing to view its actually position.",
-                    "首先：选择一个家具并将其放置在任意位置，此选框将被自动关闭。\n" +
-                    "之后：在同步位置被勾选的情况下，再次选择它并取消放置以查看其实际位置。");
+            zh.Add("Force the position when moving items (cannot be seen until re-enter).",
+                    "移动家具时强行设定位置，重新进入才能看到变化。");
+            zh.Add("BDTH integrate: leave the position set to BDTH. \n" + "(Note that BDTH cannot set rotation.)",
+                    "BDTH 集成: 将摆放过程交给 BDTH。 \n" + "(注意 BDTH 无法设定旋转。)");
             zh.Add("Automatically place item at specified position.", "自动将家具摆放在相应位置。");
             zh.Add("Rotate:", "旋转:");
             zh.Add("Name", "名称");
             zh.Add("Rotate", "旋转");
-            zh.Add("Set", "读取");
+            zh.Add("Set", "设置");
+            zh.Add("BDTH Set", "BDTH 设置");
             zh.Add("Clear", "清空");
             zh.Add("Copy", "复制");
             zh.Add("Place Anywhere", "任意摆放");

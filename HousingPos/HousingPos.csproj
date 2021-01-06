@@ -95,7 +95,7 @@
     <Compile Include="Memory.cs" />
     <Compile Include="Objects\HousingItem.cs" />
     <Compile Include="Objects\HousingPosLanguage.cs" />
-    <Compile Include="Objects\OffsetDefinition.cs" />
+    <Compile Include="Objects\OpcodeDefinition.cs" />
     <Compile Include="PluginUi.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Win32Clipboard.cs" />

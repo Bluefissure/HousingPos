@@ -22,6 +22,7 @@ namespace HousingPos
 
         public bool Recording = true;
         public bool ForceMove = false;
+        public bool BDTH = false;
         public bool SyncPos = false;
         public int SelectedItemIndex = -1;
         public float PlaceX = 0;

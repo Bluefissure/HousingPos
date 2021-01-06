@@ -68,38 +68,13 @@ namespace HousingPos.Gui
                 _localizer.Language = Config.UILanguage;
                 Config.Save();
             }
-            if (ImGui.Checkbox(_localizer.Localize("Place Anywhere"), ref Config.PlaceAnywhere))
-            {
-                Plugin.PlaceAnywhere();
-                Config.Save();
-            }
+            if (ImGui.Checkbox(_localizer.Localize("BDTH"), ref Config.BDTH)) Config.Save();
             if (Config.ShowTooltips && ImGui.IsItemHovered())
-                ImGui.SetTooltip(_localizer.Localize("Place item at anywhere."));
-
-            if (ImGui.Checkbox(_localizer.Localize("Sync Position"), ref Config.SyncPos))
-            {
-                Config.Save();
-            }
-            if (Config.SyncPos)
-            {
-                Plugin.WritePrePosition();
-            }
-            if (Config.ShowTooltips && ImGui.IsItemHovered())
-                ImGui.SetTooltip(_localizer.Localize("Sync the starting position of currently selected item with XYZ."));
-            ImGui.SameLine();
-            if (ImGui.Button(_localizer.Localize("Read Position")))
-            {
-                Config.SyncPos = false;
-                Config.Save();
-                Plugin.ReadPrePosition();
-            }
-            if (Config.ShowTooltips && ImGui.IsItemHovered())
-                ImGui.SetTooltip(_localizer.Localize("Read the starting position of currently selected item to XYZ. Invalid if syncing position."));
-
+                ImGui.SetTooltip(_localizer.Localize("BDTH integrate: leave the position set to BDTH. \n" +
+                    "(Note that BDTH cannot set rotation.)"));
             if (ImGui.Checkbox(_localizer.Localize("Force Move"), ref Config.ForceMove)) Config.Save();
             if (Config.ShowTooltips && ImGui.IsItemHovered())
-                ImGui.SetTooltip(_localizer.Localize("First: select an item and place it to an arbitrary position, this checkbox will be turned off.\n" +
-                    "Second: with sync position enabled, select it again and cancel placing to view its actually position."));
+                ImGui.SetTooltip(_localizer.Localize("Force the position when moving items (cannot be seen until re-enter)."));
             ImGui.Text("X:");
             ImGui.SameLine();
             ImGui.SetNextItemWidth(100);
@@ -147,7 +122,7 @@ namespace HousingPos.Gui
             ImGui.Text(_localizer.Localize("Y")); ImGui.NextColumn();
             ImGui.Text(_localizer.Localize("Z")); ImGui.NextColumn();
             ImGui.Text(_localizer.Localize("Rotate")); ImGui.NextColumn();
-            ImGui.Text(_localizer.Localize("Set")); ImGui.NextColumn();
+            ImGui.Text(_localizer.Localize(Config.BDTH?"BDTH Set":"Set")); ImGui.NextColumn();
             ImGui.Separator();
             for (int i = 0; i < Config.HousingItemList.Count(); i++)
             {
@@ -165,12 +140,19 @@ namespace HousingPos.Gui
                 if (ImGui.Button(_localizer.Localize("Set") + "##" + i.ToString()))
                 {
                     Config.SelectedItemIndex = i;
-                    Config.PlaceX = housingItem.X;
-                    Config.PlaceY = housingItem.Y;
-                    Config.PlaceZ = housingItem.Z;
-                    Config.PlaceRotate = housingItem.Rotate;
-                    Config.ForceMove = true;
-                    Config.Save();
+                    if (Config.BDTH)
+                    {
+                        Plugin.CommandManager.ProcessCommand($"/bdth {housingItem.X} {housingItem.Y} {housingItem.Z}");
+                    }
+                    else
+                    {
+                        Config.PlaceX = housingItem.X;
+                        Config.PlaceY = housingItem.Y;
+                        Config.PlaceZ = housingItem.Z;
+                        Config.PlaceRotate = housingItem.Rotate;
+                        Config.ForceMove = true;
+                        Config.Save();
+                    }
                 }
                 ImGui.NextColumn();
                 ImGui.Separator();

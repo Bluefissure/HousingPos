@@ -1,9 +1,9 @@
 {
     "Author": "Bluefissure",
     "Name": "HousingPos",
-    "Description": "Automatically save/load the positions of housing.",
+    "Description": "Automatically save/load the positions of housing furnitures.",
     "InternalName": "HousingPos",
-    "AssemblyVersion": "1.0.1.0",
+    "AssemblyVersion": "1.0.2.0",
     "ApplicableVersion": "any",
     "RepoUrl": "https://github.com/Bluefissure/HousingPos",
     "Tags": ["bluefissure", "housing"],

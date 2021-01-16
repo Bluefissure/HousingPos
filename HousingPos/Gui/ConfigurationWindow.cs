@@ -6,6 +6,7 @@ using Dalamud.Game.Chat;
 using ImGuiNET;
 using HousingPos.Objects;
 using System.ComponentModel.DataAnnotations;
+using Newtonsoft.Json;
 
 namespace HousingPos.Gui
 {
@@ -48,15 +49,7 @@ namespace HousingPos.Gui
 
         private void DrawGeneralSettings()
         {
-            if (ImGui.Checkbox(_localizer.Localize("Recording"), ref Config.Recording)) Config.Save();
-            if (Config.ShowTooltips && ImGui.IsItemHovered())
-                ImGui.SetTooltip(_localizer.Localize("Automatically record housing item list."));
-            ImGui.SameLine(ImGui.GetColumnWidth() - 80);
-            ImGui.TextUnformatted(_localizer.Localize("Tooltips"));
-            ImGui.AlignTextToFramePadding();
-            ImGui.SameLine();
-            if (ImGui.Checkbox("##hideTooltipsOnOff", ref Config.ShowTooltips)) Config.Save();
-
+            
             ImGui.TextUnformatted(_localizer.Localize("Language:"));
             if (Plugin.Config.ShowTooltips && ImGui.IsItemHovered())
                 ImGui.SetTooltip(_localizer.Localize("Change the UI Language."));
@@ -68,6 +61,12 @@ namespace HousingPos.Gui
                 _localizer.Language = Config.UILanguage;
                 Config.Save();
             }
+            ImGui.SameLine(ImGui.GetColumnWidth() - 80);
+            ImGui.TextUnformatted(_localizer.Localize("Tooltips"));
+            ImGui.AlignTextToFramePadding();
+            ImGui.SameLine();
+            if (ImGui.Checkbox("##hideTooltipsOnOff", ref Config.ShowTooltips)) Config.Save();
+
             if (ImGui.Checkbox(_localizer.Localize("BDTH"), ref Config.BDTH)) Config.Save();
             if (Config.ShowTooltips && ImGui.IsItemHovered())
                 ImGui.SetTooltip(_localizer.Localize("BDTH integrate: leave the position set to BDTH. \n" +
@@ -113,6 +112,79 @@ namespace HousingPos.Gui
 
         private void DrawItemList()
         {
+            ImGui.Columns(1);
+            if (ImGui.Button(_localizer.Localize("Clear")))
+            {
+                Config.HousingItemList.Clear();
+                Config.Save();
+            }
+            ImGui.SameLine();
+            if (ImGui.Button(_localizer.Localize("Sort")))
+            {
+                Config.SelectedItemIndex = -1;
+                Config.HousingItemList.Sort((x, y) => {
+                    if (x.ItemKey.CompareTo(y.ItemKey) != 0)
+                        return x.ItemKey.CompareTo(y.ItemKey);
+                    if (x.X.CompareTo(y.X) != 0)
+                        return x.X.CompareTo(y.X);
+                    if (x.Y.CompareTo(y.Y) != 0)
+                        return x.Y.CompareTo(y.Y);
+                    if (x.Z.CompareTo(y.Z) != 0)
+                        return x.Z.CompareTo(y.Z);
+                    if (x.Rotate.CompareTo(y.Rotate) != 0)
+                        return x.Rotate.CompareTo(y.Rotate);
+                    return 0;
+                });
+                Config.Save();
+            }
+            ImGui.SameLine();
+            if (ImGui.Button(_localizer.Localize("Copy")))
+            {
+                try
+                {
+                    string str = _localizer.Localize("Only for purchasing, please use Export/Import for the whole preset.\n");
+                    for (int i = 0; i < Config.HousingItemList.Count(); i++)
+                    {
+                        var housingItem = Config.HousingItemList[i];
+                        str += $"item#{housingItem.ItemKey} {housingItem.Name}\n";
+                    }
+                    Win32Clipboard.CopyTextToClipboard(str);
+                    Plugin.Log(String.Format(_localizer.Localize("Copied {0} items to your clipboard."), Config.HousingItemList.Count));
+                }
+                catch (Exception e)
+                {
+                    Plugin.LogError($"Error while exporting all items: {e.Message}");
+                }
+            }
+            ImGui.SameLine();
+            if (ImGui.Button(_localizer.Localize("Export")))
+            {
+                try
+                {
+                    string str = JsonConvert.SerializeObject(Config.HousingItemList);
+                    Win32Clipboard.CopyTextToClipboard(str);
+                    Plugin.Log(String.Format(_localizer.Localize("Exported {0} items to your clipboard."), Config.HousingItemList.Count));
+                }
+                catch (Exception e)
+                {
+                    Plugin.LogError($"Error while exporting items: {e.Message}");
+                }
+            }
+            ImGui.SameLine();
+            if (ImGui.Button(_localizer.Localize("Import")))
+            {
+                try
+                {
+                    string str = ImGui.GetClipboardText();
+                    Config.HousingItemList = JsonConvert.DeserializeObject<List<HousingItem>>(str);
+                    Config.Save();
+                    Plugin.Log(String.Format(_localizer.Localize("Imported {0} items from your clipboard."), Config.HousingItemList.Count));
+                }
+                catch (Exception e)
+                {
+                    Plugin.LogError($"Error while importing items: {e.Message}");
+                }
+            }
             // name, x, t, z, r, set
             int columns = 6;
             ImGui.Columns(columns, "ItemList", true);
@@ -157,49 +229,7 @@ namespace HousingPos.Gui
                 ImGui.NextColumn();
                 ImGui.Separator();
             }
-            ImGui.Columns(1);
-            if (ImGui.Button(_localizer.Localize("Clear")))
-            {
-                Config.HousingItemList.Clear();
-                Config.Save();
-            }
-            ImGui.SameLine();
-            if (ImGui.Button(_localizer.Localize("Sort")))
-            {
-                Config.SelectedItemIndex = -1;
-                Config.HousingItemList.Sort((x, y) => {
-                    if (x.ItemKey.CompareTo(y.ItemKey) != 0)
-                        return x.ItemKey.CompareTo(y.ItemKey);
-                    if (x.X.CompareTo(y.X) != 0)
-                        return x.X.CompareTo(y.X);
-                    if (x.Y.CompareTo(y.Y) != 0)
-                        return x.Y.CompareTo(y.Y);
-                    if (x.Z.CompareTo(y.Z) != 0)
-                        return x.Z.CompareTo(y.Z);
-                    if (x.Rotate.CompareTo(y.Rotate) != 0)
-                        return x.Rotate.CompareTo(y.Rotate);
-                    return 0;
-                });
-                Config.Save();
-            }
-            ImGui.SameLine();
-            if (ImGui.Button(_localizer.Localize("Copy")))
-            {
-                try
-                {
-                    string str = _localizer.Localize("Only for purchasing, please copy config file for the whole preset.\n");
-                    for (int i = 0; i < Config.HousingItemList.Count(); i++)
-                    {
-                        var housingItem = Config.HousingItemList[i];
-                        str += $"item#{housingItem.ItemKey} {housingItem.Name}\n";
-                    }
-                    Win32Clipboard.CopyTextToClipboard(str);
-                }
-                catch (Exception e)
-                {
-                    Plugin.Log($"Error while exporting all items: {e}");
-                }
-            }
+            
         }
 
     }

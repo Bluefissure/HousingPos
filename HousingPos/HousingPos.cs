@@ -17,6 +17,8 @@ using System.Reflection;
 using System.IO;
 using System.Globalization;
 using Dalamud.Game;
+using Dalamud.Hooking;
+using HousingPos.Gui;
 
 namespace HousingPos
 {
@@ -29,8 +31,18 @@ namespace HousingPos
         public OpcodeDefinition Opcode { get; private set; }
         public CommandManager CommandManager = null;
         public SigScanner Scanner { get; private set; }
+
+        private Localizer _localizer;
+
+        public List<HousingItem> HousingItemList = new List<HousingItem>();
+
+        public IntPtr UIFunc;
+        [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
+        private delegate void UIFuncDelegate(Int64 a1, UInt32 a2, char a3);
+        private Hook<UIFuncDelegate> UIFuncHook;
         public void Dispose()
         {
+            UIFuncHook.Disable();
             Config.PlaceAnywhere = false;
             Interface.Framework.Network.OnNetworkMessage -= OnNetwork;
             Interface.CommandManager.RemoveHandler("/xhouse");
@@ -45,6 +57,7 @@ namespace HousingPos
             Scanner = Interface.TargetModuleScanner;
             Config = pluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
             Config.Initialize(pluginInterface);
+            _localizer = new Localizer(Config.UILanguage);
             LoadOffset();
             Initialize();
             Interface.CommandManager.AddHandler("/xhouse", new CommandInfo(CommandHandler)
@@ -56,6 +69,31 @@ namespace HousingPos
         }
         public void Initialize()
         {
+            UIFunc = Interface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 89 77 04") + 5;
+            //Log($"UIFunc:{UIFunc}");
+            UIFuncHook = new Hook<UIFuncDelegate>(
+                UIFunc,
+                new UIFuncDelegate(UIFuncDetour)
+            );
+            UIFuncHook.Enable();
+        }
+        private void UIFuncDetour(Int64 a1, UInt32 a2, char a3)
+        {
+            //Log($"TestFuncHook: {a1}, {a2}, {(int)a3}");
+            if(a2 == 67 && a3 == 1 )
+            {
+                if(HousingItemList.Count > 0 && Config.HousingItemList.Count == 0)
+                {
+                    Log(String.Format(_localizer.Localize("Load {0} furnitures."), HousingItemList.Count));
+                    Config.HousingItemList = HousingItemList.ToList();
+                    Config.Save();
+                }
+                else
+                {
+                    Log(_localizer.Localize("Please clear the furniture list and re-enter house to load current furniture list."));
+                }
+            }
+            this.UIFuncHook.Original(a1, a2, a3);
         }
         public void LoadOffset()
         {
@@ -102,7 +140,7 @@ namespace HousingPos
             var OpcodeMoveItem = Int32.Parse(Opcode.MoveItem, NumberStyles.HexNumber);
             if (direction == NetworkMessageDirection.ZoneDown)
             {
-                if (opCode != OpcodeLoadHousing || !Config.Recording)
+                if (opCode != OpcodeLoadHousing)
                 {
                     return;
                 }
@@ -111,12 +149,14 @@ namespace HousingPos
                 if (BitConverter.ToString(posArr).Replace("-", " ").StartsWith("FF FF FF FF FF FF FF FF"))
                 {
                     Config.SelectedItemIndex = -1;
+                    HousingItemList.Clear();
                     Config.HousingItemList.Clear();
                     Config.Save();
                     return;
                 }
                 if (DateTime.Now > Config.lastPosPackageTime.AddSeconds(5))
                 {
+                    HousingItemList.Clear();
                     Config.HousingItemList.Clear();
                     Config.lastPosPackageTime = DateTime.Now;
                     Config.Save();
@@ -130,7 +170,7 @@ namespace HousingPos
                     var x = BitConverter.ToSingle(posArr, i + 12);
                     var y = BitConverter.ToSingle(posArr, i + 16);
                     var z = BitConverter.ToSingle(posArr, i + 20);
-                    Config.HousingItemList.Add(new HousingItem(
+                    HousingItemList.Add(new HousingItem(
                             modelKey,
                             item.RowId,
                             x,
@@ -140,8 +180,8 @@ namespace HousingPos
                             item.Name
                         ));
                 }
-                Log($"Load {Config.HousingItemList.Count} items.");
-                Config.Save();
+                // Log($"Load {Config.HousingItemList.Count} items.");
+                // Config.Save();
             }
             else
             {
@@ -156,12 +196,12 @@ namespace HousingPos
                 float y = BitConverter.ToSingle(posArr, 16);
                 float z = BitConverter.ToSingle(posArr, 20);
                 float rotate = BitConverter.ToSingle(posArr, 24);
-                Log($"Moving to ({x:N3}, {y:N3}, {z:N3}, {rotate:N3})");
+                Log($"({x:N3}, {y:N3}, {z:N3}, {rotate:N3}) ==>");
                 x = Config.PlaceX;
                 y = Config.PlaceY;
                 z = Config.PlaceZ;
                 rotate = Config.PlaceRotate;
-                Log($"Forced to ({x:N3}, {y:N3}, {z:N3}, {rotate:N3})");
+                Log($"({x:N3}, {y:N3}, {z:N3}, {rotate:N3})");
                 byte[] bx = BitConverter.GetBytes(x);
                 bx.CopyTo(posArr, 12);
                 byte[] by = BitConverter.GetBytes(y);

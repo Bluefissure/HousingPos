@@ -22,7 +22,7 @@ Force move: The target position is forced to change when the furniture is moved,
 
 - Can I use it to steal others' housing presets?
 
-  No, you can only read the house **which  you can decorate**.
+  No, you can only read the furniture list of the house **which  you can decorate**.
   
 - Will I get banned?
 

@@ -30,4 +30,6 @@ Force move: The target position is forced to change when the furniture is moved,
 
 ## Update
 
-Since the opcode is updated with the version, the furniture list and forc move function will become invalid after each patch update. Please submit an issue to request an update to the definitions.
+Since the opcode is updated along with the patch update, the furniture list and force move function will become invalid after each patch update.
+
+Please submit an issue to request an update to the definitions.

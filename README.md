@@ -12,7 +12,7 @@ Use `/xhouse` in the game to open the config panel.
 
 ## Instructions
 
-Please clear the furniture list before entering the room. The furniture list will be automatically read after opening the `House-Furnishings` page.
+Please clear the furniture list before entering the room. The furniture list will be automatically read after opening the `Housing-Indoor Furnishings` page.
 
 BDTH: After enabling it, it will integrate with [BDTHPlugin](https://github.com/LeonBlade/BDTHPlugin). Clicking on the setting will automatically invoke the BDTH placement command.
 

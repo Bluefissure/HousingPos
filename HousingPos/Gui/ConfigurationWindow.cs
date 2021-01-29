@@ -71,9 +71,11 @@ namespace HousingPos.Gui
             if (Config.ShowTooltips && ImGui.IsItemHovered())
                 ImGui.SetTooltip(_localizer.Localize("BDTH integrate: leave the position set to BDTH. \n" +
                     "(Note that BDTH cannot set rotation.)"));
+            /*
             if (ImGui.Checkbox(_localizer.Localize("Force Move"), ref Config.ForceMove)) Config.Save();
             if (Config.ShowTooltips && ImGui.IsItemHovered())
                 ImGui.SetTooltip(_localizer.Localize("Force the position when moving items (cannot be seen until re-enter)."));
+            */
             ImGui.Text("X:");
             ImGui.SameLine();
             ImGui.SetNextItemWidth(100);
@@ -186,7 +188,7 @@ namespace HousingPos.Gui
                 }
             }
             // name, x, t, z, r, set
-            int columns = 6;
+            int columns = Config.BDTH ? 6 : 5;
             ImGui.Columns(columns, "ItemList", true);
             ImGui.Separator();
             ImGui.Text(_localizer.Localize("Name")); ImGui.NextColumn();
@@ -194,7 +196,10 @@ namespace HousingPos.Gui
             ImGui.Text(_localizer.Localize("Y")); ImGui.NextColumn();
             ImGui.Text(_localizer.Localize("Z")); ImGui.NextColumn();
             ImGui.Text(_localizer.Localize("Rotate")); ImGui.NextColumn();
-            ImGui.Text(_localizer.Localize(Config.BDTH?"BDTH Set":"Set")); ImGui.NextColumn();
+            if (Config.BDTH)
+            {
+                ImGui.Text(_localizer.Localize("BDTH Set")); ImGui.NextColumn();
+            }
             ImGui.Separator();
             for (int i = 0; i < Config.HousingItemList.Count(); i++)
             {
@@ -209,24 +214,22 @@ namespace HousingPos.Gui
                 ImGui.Text($"{housingItem.Y:N3}"); ImGui.NextColumn();
                 ImGui.Text($"{housingItem.Z:N3}"); ImGui.NextColumn();
                 ImGui.Text($"{housingItem.Rotate:N3}"); ImGui.NextColumn();
-                if (ImGui.Button(_localizer.Localize("Set") + "##" + i.ToString()))
+                if (Config.BDTH)
                 {
-                    Config.SelectedItemIndex = i;
-                    if (Config.BDTH)
+                    if (ImGui.Button(_localizer.Localize("Set") + "##" + i.ToString()))
                     {
-                        Plugin.CommandManager.ProcessCommand($"/bdth {housingItem.X} {housingItem.Y} {housingItem.Z}");
-                    }
-                    else
-                    {
+                        Config.SelectedItemIndex = i;
+
                         Config.PlaceX = housingItem.X;
                         Config.PlaceY = housingItem.Y;
                         Config.PlaceZ = housingItem.Z;
                         Config.PlaceRotate = housingItem.Rotate;
-                        Config.ForceMove = true;
+                        Plugin.CommandManager.ProcessCommand($"/bdth {housingItem.X} {housingItem.Y} {housingItem.Z} {housingItem.Rotate}");
+                        // Config.ForceMove = true;
                         Config.Save();
                     }
+                    ImGui.NextColumn();
                 }
-                ImGui.NextColumn();
                 ImGui.Separator();
             }
             

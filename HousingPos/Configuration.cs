@@ -20,7 +20,7 @@ namespace HousingPos
         public string UILanguage = "en";
         public List<HousingItem> HousingItemList = new List<HousingItem>();
 
-        public bool ForceMove = false;
+        // public bool ForceMove = false;
         public bool BDTH = false;
         public bool SyncPos = false;
         public int SelectedItemIndex = -1;

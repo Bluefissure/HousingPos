@@ -22,8 +22,10 @@ namespace HousingPos.Gui
         {
             if (Visible)
                 DrawUi();
+            DrawScreen();
         }
 
         protected abstract void DrawUi();
+        protected abstract void DrawScreen();
     }
 }

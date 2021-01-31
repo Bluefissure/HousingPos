@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using Dalamud.Game.Chat;
 using ImGuiNET;
 using HousingPos.Objects;
 using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
+using System.Numerics;
+using System.Reflection;
 
 namespace HousingPos.Gui
 {
@@ -27,7 +28,7 @@ namespace HousingPos.Gui
         protected override void DrawUi()
         {
             ImGui.SetNextWindowSize(new Vector2(530, 450), ImGuiCond.FirstUseEver);
-            if (!ImGui.Begin($"{Plugin.Name} {_localizer.Localize("Panel")}", ref WindowVisible, ImGuiWindowFlags.NoScrollWithMouse))
+            if (!ImGui.Begin($"{Plugin.Name} v{Assembly.GetExecutingAssembly().GetName().Version}", ref WindowVisible, ImGuiWindowFlags.NoScrollWithMouse))
             {
                 ImGui.End();
                 return;
@@ -45,7 +46,15 @@ namespace HousingPos.Gui
             
         }
 
-        
+        protected override void DrawScreen()
+        {
+            if (Config.DrawScreen)
+            {
+                DrawItemOnScreen();
+            }
+        }
+
+
 
         private void DrawGeneralSettings()
         {
@@ -69,8 +78,37 @@ namespace HousingPos.Gui
 
             if (ImGui.Checkbox(_localizer.Localize("BDTH"), ref Config.BDTH)) Config.Save();
             if (Config.ShowTooltips && ImGui.IsItemHovered())
-                ImGui.SetTooltip(_localizer.Localize("BDTH integrate: leave the position set to BDTH. \n" +
-                    "(Note that BDTH cannot set rotation.)"));
+                ImGui.SetTooltip(_localizer.Localize("BDTH integrate: leave the position set to BDTH."));
+            if (ImGui.Checkbox(_localizer.Localize("Draw on screen"), ref Config.DrawScreen)) Config.Save();
+            if (Config.ShowTooltips && ImGui.IsItemHovered())
+                ImGui.SetTooltip(_localizer.Localize("Draw items on screen."));
+            
+            if (Config.DrawScreen)
+            {
+                ImGui.SameLine();
+                if (ImGui.Button(_localizer.Localize("Undo") + "##Undo"))
+                {
+                    if (Config.HiddenScreenItemHistory != null && Config.HiddenScreenItemHistory.Count > 0)
+                    {
+                        var lastIndex = Config.HiddenScreenItemHistory.Last();
+                        if (lastIndex < Config.HousingItemList.Count && lastIndex >= 0)
+                        {
+                            Config.HousingItemList[lastIndex].HiddenOnScreen = false;
+                            Config.HiddenScreenItemHistory.RemoveAt(Config.HiddenScreenItemHistory.Count - 1);
+                            Config.Save();
+                        }
+                    }
+                }
+                if (Config.ShowTooltips && ImGui.IsItemHovered())
+                    ImGui.SetTooltip(_localizer.Localize("Undo the on-screen setting."));
+                ImGui.TextUnformatted(_localizer.Localize("Drawing Distance:"));
+                if (Config.ShowTooltips && ImGui.IsItemHovered())
+                    ImGui.SetTooltip(_localizer.Localize("Only draw items within this distance to your character. (0 for unlimited)"));
+                if (ImGui.DragFloat("##DrawDistance", ref Config.DrawDistance, 0.1f, 0, 52)) { 
+                    Config.DrawDistance = Math.Max(0, Config.DrawDistance);
+                    Config.Save();
+                }
+            }
             /*
             if (ImGui.Checkbox(_localizer.Localize("Force Move"), ref Config.ForceMove)) Config.Save();
             if (Config.ShowTooltips && ImGui.IsItemHovered())
@@ -111,7 +149,52 @@ namespace HousingPos.Gui
                 Config.Save();
             }
         }
+        private void DrawItemOnScreen()
+        {
+            for (int i = 0; i < Config.HousingItemList.Count(); i++)
+            {
+                SharpDX.Vector3 playerPos = Plugin.Interface.ClientState.LocalPlayer.Position;
+                var housingItem = Config.HousingItemList[i];
+                var itemPos = new SharpDX.Vector3(housingItem.X, housingItem.Y, housingItem.Z);
+                if (housingItem.HiddenOnScreen) continue;
+                if (Config.DrawDistance > 0 && (playerPos - itemPos).Length() > Config.DrawDistance)
+                    continue;
+                var displayName = housingItem.Name;
+                if (Plugin.Interface.Framework.Gui.WorldToScreen(itemPos, out var screenCoords))
+                {
+                    ImGui.PushID("HousingItemWindow" + i);
+                    ImGui.SetNextWindowPos(new Vector2(screenCoords.X, screenCoords.Y));
+                    ImGui.SetNextWindowBgAlpha(0.8f);
+                    if (ImGui.Begin("HousingItem" + i,
+                        ImGuiWindowFlags.NoDecoration |
+                        ImGuiWindowFlags.AlwaysAutoResize |
+                        ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.NoMove |
+                        ImGuiWindowFlags.NoFocusOnAppearing | ImGuiWindowFlags.NoNav))
+                    {
+                        ImGui.Text($"{displayName}");
+                        ImGui.SameLine();
+                        if (Config.BDTH)
+                        {
+                            if (ImGui.Button(_localizer.Localize("Set") + "##ScreenItem" + i.ToString()))
+                            {
+                                Config.SelectedItemIndex = i;
+                                Config.PlaceX = housingItem.X;
+                                Config.PlaceY = housingItem.Y;
+                                Config.PlaceZ = housingItem.Z;
+                                Config.PlaceRotate = housingItem.Rotate;
+                                Plugin.CommandManager.ProcessCommand($"/bdth {housingItem.X} {housingItem.Y} {housingItem.Z} {housingItem.Rotate}");
+                                housingItem.HiddenOnScreen = true;
+                                Config.HiddenScreenItemHistory.Add(i);
+                                Config.Save();
+                            }
+                        }
+                        ImGui.End();
+                    }
 
+                    ImGui.PopID();
+                }
+            }
+        }
         private void DrawItemList()
         {
             ImGui.Columns(1);
@@ -145,10 +228,13 @@ namespace HousingPos.Gui
                 try
                 {
                     string str = _localizer.Localize("Only for purchasing, please use Export/Import for the whole preset.\n");
-                    for (int i = 0; i < Config.HousingItemList.Count(); i++)
+                    var itemList = new List<string>();
+                    foreach (var housingItem in Config.HousingItemList)
+                        itemList.Add($"item#{housingItem.ItemKey}\t{housingItem.Name}");
+                    var itemSet = new HashSet<string>(itemList);
+                    foreach (string itemName in itemSet)
                     {
-                        var housingItem = Config.HousingItemList[i];
-                        str += $"item#{housingItem.ItemKey} {housingItem.Name}\n";
+                        str += $"{itemName}\t{itemList.Count(x => x == itemName)}\n";
                     }
                     Win32Clipboard.CopyTextToClipboard(str);
                     Plugin.Log(String.Format(_localizer.Localize("Copied {0} items to your clipboard."), Config.HousingItemList.Count));

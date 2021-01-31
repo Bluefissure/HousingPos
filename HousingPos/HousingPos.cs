@@ -49,6 +49,7 @@ namespace HousingPos
             LoadHousingFuncHook.Disable();
             UIFuncHook.Disable();
             Config.PlaceAnywhere = false;
+            Interface.ClientState.TerritoryChanged -= TerritoryChanged;
             Interface.Framework.Network.OnNetworkMessage -= OnNetwork;
             Interface.CommandManager.RemoveHandler("/xhouse");
             Gui?.Dispose();
@@ -71,6 +72,7 @@ namespace HousingPos
             });
             Gui = new PluginUi(this);
             Interface.Framework.Network.OnNetworkMessage += OnNetwork;
+            Interface.ClientState.TerritoryChanged += TerritoryChanged;
         }
         public void Initialize()
         {
@@ -97,6 +99,7 @@ namespace HousingPos
                 {
                     Log(String.Format(_localizer.Localize("Load {0} furnitures."), HousingItemList.Count));
                     Config.HousingItemList = HousingItemList.ToList();
+                    Config.HiddenScreenItemHistory = new List<int>();
                     Config.Save();
                 }
                 else
@@ -119,6 +122,7 @@ namespace HousingPos
                 Config.SelectedItemIndex = -1;
                 HousingItemList.Clear();
                 Config.HousingItemList.Clear();
+                Config.HiddenScreenItemHistory = new List<int>();
                 Config.Save();
                 this.LoadHousingFuncHook.Original(a1, a2);
                 return;
@@ -151,18 +155,10 @@ namespace HousingPos
             }
             this.LoadHousingFuncHook.Original(a1, a2);
         }
-        public void LoadOffset()
+        private void TerritoryChanged(object sender, ushort e)
         {
-            string OpcodeFilePath = Path.Combine(Assembly.GetExecutingAssembly().Location, "../opcode.json");
-            Opcode = JsonConvert.DeserializeObject<OpcodeDefinition>(File.ReadAllText(OpcodeFilePath));
-            var verFilePath = Path.Combine(Scanner.Module.FileName, "../ffxivgame.ver");
-            var gameVer = File.ReadAllText(verFilePath);
-            if (gameVer.Trim() != Opcode.ExeVersion.Trim())
-            {
-                string message = $"Unsupported game version: {gameVer}";
-                LogError(message);
-                throw new Exception($"[{Name}] {message}");
-            }
+            Config.DrawScreen = false;
+            Config.Save();
         }
         public void CommandHandler(string command, string arguments)
         {

@@ -33,8 +33,8 @@ namespace HousingPos.Gui
             zh.Add("Force Move", "强制移动");
             zh.Add("Force the position when moving items (cannot be seen until re-enter).",
                     "移动家具时强行设定位置，重新进入才能看到变化。");
-            zh.Add("BDTH integrate: leave the position set to BDTH. \n" + "(Note that BDTH cannot set rotation.)",
-                    "BDTH 集成: 将摆放过程交给 BDTH。 \n" + "(注意 BDTH 无法设定旋转。)");
+            zh.Add("BDTH integrate: leave the position set to BDTH.",
+                    "BDTH 集成: 将摆放过程交给 BDTH。");
             zh.Add("Automatically place item at specified position.", "自动将家具摆放在相应位置。");
             zh.Add("Export", "导出");
             zh.Add("Import", "导入");
@@ -58,6 +58,12 @@ namespace HousingPos.Gui
             zh.Add("Sync the starting position of currently selected item with XYZ.", "同步XYZ与当前选中物品的初始位置。");
             zh.Add("Sort", "排序");
             zh.Add("Only for purchasing, please use Export/Import for the whole preset.\n", "仅用于采购家具，保存预设请使用导入/导出。\n");
+            zh.Add("Draw on screen", "屏幕绘制");
+            zh.Add("Draw items on screen.", "在屏幕上绘制家具。");
+            zh.Add("Undo", "撤销");
+            zh.Add("Undo the on-screen setting.", "撤销屏幕摆放。");
+            zh.Add("Drawing Distance:", "绘制距离:");
+            zh.Add("Only draw items within this distance to your character. (0 for unlimited)", "只绘制距离以内的家具。（0为无限）");
         }
     }
 }

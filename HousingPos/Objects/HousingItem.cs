@@ -17,6 +17,7 @@ namespace HousingPos.Objects
         public float Z;
         public float Rotate;
         public string Name;
+        public bool HiddenOnScreen = false;
 
         public HousingItem(ushort modelKey, uint itemKey, float x, float y, float z, float rotate, string name)
         {

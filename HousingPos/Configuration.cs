@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using Dalamud.Configuration;
 using Dalamud.Plugin;
-using Dalamud.Game.Chat;
 using HousingPos.Objects;
-using System.Linq;
 
 namespace HousingPos
 {
@@ -15,6 +13,9 @@ namespace HousingPos
 
         public HousingPosLanguage HousingPosLanguage = HousingPosLanguage.Client;
         public bool ShowTooltips = true;
+        public bool DrawScreen = false;
+        public float DrawDistance = 0;
+        public List<int> HiddenScreenItemHistory;
         public bool PlaceAnywhere = false;
         public bool UseFloatingWindow;
         public string UILanguage = "en";

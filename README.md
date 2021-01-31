@@ -24,13 +24,3 @@ BDTH: After enabling it, it will integrate with [BDTHPlugin](https://github.com/
 - Can I use it to steal others' housing presets?
 
   No, you can only read the furniture list of the house **which  you can decorate**.
-  
-- Will I get banned?
-
-  Please don't use the force move to move outdoor furnitures to some weird positions.
-
-## Update
-
-Since the opcode is updated along with the patch update, the furniture list and force move function will become invalid after each patch update.
-
-Please submit an issue to request an update to the definitions.

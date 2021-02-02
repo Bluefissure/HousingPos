@@ -93,11 +93,26 @@ namespace HousingPos
         private void UIFuncDetour(Int64 a1, UInt32 a2, char a3)
         {
             //Log($"TestFuncHook: {a1}, {a2}, {(int)a3}");
-            if(a2 == 67 && a3 == 1 )
+            if (a2 == 67 && a3 == 1)
             {
-                if(HousingItemList.Count > 0 && Config.HousingItemList.Count == 0)
+                if (HousingItemList.Count > 0 && Config.HousingItemList.Count == 0)
                 {
                     Log(String.Format(_localizer.Localize("Load {0} furnitures."), HousingItemList.Count));
+                    Config.HousingItemList = HousingItemList.ToList();
+                    Config.HiddenScreenItemHistory = new List<int>();
+                    Config.Save();
+                }
+                else
+                {
+                    Log(_localizer.Localize("Please clear the furniture list and re-enter house to load current furniture list."));
+                }
+            }
+            if (a2 == 48 && a3 == 1 && Config.Recording)
+            {
+                if (HousingItemList.Count > 0 && Config.HousingItemList.Count == 0)
+                {
+                    Log(String.Format(_localizer.Localize("Load {0} furnitures."), HousingItemList.Count));
+                    Log($"偷家有风险，使用需谨慎.");
                     Config.HousingItemList = HousingItemList.ToList();
                     Config.HiddenScreenItemHistory = new List<int>();
                     Config.Save();
@@ -193,7 +208,7 @@ namespace HousingPos
             var OpcodeMoveItem = Int32.Parse(Opcode.MoveItem, NumberStyles.HexNumber);
             if (direction == NetworkMessageDirection.ZoneDown)
             {
-                if (opCode != OpcodeLoadHousing)
+                if (opCode != OpcodeLoadHousing || !Config.Recording)
                 {
                     return;
                 }
@@ -233,8 +248,8 @@ namespace HousingPos
                             item.Name
                         ));
                 }
-                // Log($"Load {Config.HousingItemList.Count} items.");
-                // Config.Save();
+                Log($"Load {Config.HousingItemList.Count} items.");
+                Config.Save();
             }
             else
             {

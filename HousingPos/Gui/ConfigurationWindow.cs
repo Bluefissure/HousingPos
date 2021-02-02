@@ -58,7 +58,11 @@ namespace HousingPos.Gui
 
         private void DrawGeneralSettings()
         {
-            
+            if (ImGui.Checkbox(_localizer.Localize("Recording"), ref Config.Recording)) Config.Save();
+            if (Config.ShowTooltips && ImGui.IsItemHovered())
+                ImGui.SetTooltip(_localizer.Localize("Automatically record housing item list."));
+            ImGui.SameLine(ImGui.GetColumnWidth() - 80);
+
             ImGui.TextUnformatted(_localizer.Localize("Language:"));
             if (Plugin.Config.ShowTooltips && ImGui.IsItemHovered())
                 ImGui.SetTooltip(_localizer.Localize("Change the UI Language."));

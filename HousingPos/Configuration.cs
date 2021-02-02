@@ -20,6 +20,7 @@ namespace HousingPos
         public bool UseFloatingWindow;
         public string UILanguage = "en";
         public List<HousingItem> HousingItemList = new List<HousingItem>();
+        public bool Recording = true;
 
         // public bool ForceMove = false;
         public bool BDTH = false;

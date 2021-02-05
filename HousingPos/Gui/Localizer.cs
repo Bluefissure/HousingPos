@@ -41,6 +41,7 @@ namespace HousingPos.Gui
             zh.Add("Copied {0} items to your clipboard.", "将{0}个物品复制到了剪贴板。");
             zh.Add("Exported {0} items to your clipboard.", "将{0}个物品导出到了剪贴板。");
             zh.Add("Imported {0} items from your clipboard.", "从剪贴板导入了{0}个物品。");
+            zh.Add("Imported {0} chocobo items from your clipboard, {1} failed.", "从剪贴板导入了{0}个陆行鸟装修导出的物品, {1}个失败了。");
             zh.Add("Rotate:", "旋转:");
             zh.Add("Name", "名称");
             zh.Add("Rotate", "旋转");

@@ -234,7 +234,7 @@ namespace HousingPos.Gui
                         var x = chocoboItem.posX[i];
                         var y = chocoboItem.posY[i];
                         var z = chocoboItem.posZ[i];
-                        var rotation = chocoboItem.Rotation[i];
+                        var rotation = (float)(Math.Asin(chocoboItem.Rotation[i]) * 2);
                         Config.HousingItemList.Add(new HousingItem(
                             funiture.ModelKey, item.RowId, x, y, z, rotation, item.Name));
                         successed++;

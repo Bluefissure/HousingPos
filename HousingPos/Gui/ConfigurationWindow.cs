@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Dalamud.Plugin;
 using Dalamud.Game.Chat;
 using ImGuiNET;
 using HousingPos.Objects;
@@ -8,6 +9,7 @@ using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
 using System.Numerics;
 using System.Reflection;
+using Lumina.Excel.GeneratedSheets;
 
 namespace HousingPos.Gui
 {
@@ -18,6 +20,7 @@ namespace HousingPos.Gui
         private readonly string[] _languageList;
         private int _selectedLanguage;
         private Localizer _localizer;
+        private Dictionary<uint, uint> iconToFurniture = new Dictionary<uint, uint> { };
 
         public ConfigurationWindow(HousingPos plugin) : base(plugin)
         {
@@ -199,6 +202,58 @@ namespace HousingPos.Gui
                 }
             }
         }
+
+        private bool LoadChocoboSave(string str)
+        {
+            try
+            {
+                var chocoboInput = JsonConvert.DeserializeObject<ChocoboInput>(str);
+                int failed = 0;
+                int successed = 0;
+                if (iconToFurniture.Count == 0)
+                {
+                    var housingFurnitures = Plugin.Interface.Data.GetExcelSheet<HousingFurniture>();
+                    foreach (var furniture in housingFurnitures)
+                    {
+                        var item = furniture.Item.Value;
+                        ushort iconId = item.Icon;
+                        if (!iconToFurniture.ContainsKey(iconId))
+                            iconToFurniture.Add(item.Icon, furniture.RowId);
+                    }
+                }
+                foreach (var chocoboItem in chocoboInput.list)
+                {
+                    var iconId = chocoboItem.categoryId;
+                    if (!iconToFurniture.ContainsKey(iconId))
+                    {
+                        failed += chocoboItem.count;
+                        continue;
+                    }
+                    var furnitureId = iconToFurniture[iconId];
+                    var funiture = Plugin.Interface.Data.GetExcelSheet<HousingFurniture>().GetRow(furnitureId);
+                    var item = funiture.Item.Value;
+                    int len = chocoboItem.count;
+                    for (int i = 0; i < len; i++)
+                    {
+                        var x = chocoboItem.posX[i];
+                        var y = chocoboItem.posY[i];
+                        var z = chocoboItem.posZ[i];
+                        var rotation = (float)(Math.Asin(chocoboItem.Rotation[i]) * 2);
+                        Config.HousingItemList.Add(new HousingItem(
+                            funiture.ModelKey, item.RowId, x, y, z, rotation, item.Name));
+                        successed++;
+                    }
+                }
+                Plugin.Log(String.Format(_localizer.Localize("Imported {0} chocobo items from your clipboard, {1} failed."), successed, failed));
+                return true;
+            }
+            catch (Exception e)
+            {
+                Plugin.LogError($"Error while importing chocobo save: {e.Message}");
+            }
+            return false;
+        }
+
         private void DrawItemList()
         {
             ImGui.Columns(1);
@@ -265,16 +320,28 @@ namespace HousingPos.Gui
             ImGui.SameLine();
             if (ImGui.Button(_localizer.Localize("Import")))
             {
+                string str = ImGui.GetClipboardText();
                 try
                 {
-                    string str = ImGui.GetClipboardText();
                     Config.HousingItemList = JsonConvert.DeserializeObject<List<HousingItem>>(str);
+                    foreach (var item in Config.HousingItemList)
+                    {
+                        try
+                        {
+                            item.Name = Plugin.Interface.Data.GetExcelSheet<Item>().GetRow(item.ItemKey).Name;
+                        }
+                        catch (Exception e)
+                        {
+                            Plugin.LogError($"Error while translating item#{item.ItemKey}: {e.Message}");
+                        }
+                    }
                     Config.Save();
                     Plugin.Log(String.Format(_localizer.Localize("Imported {0} items from your clipboard."), Config.HousingItemList.Count));
                 }
                 catch (Exception e)
                 {
                     Plugin.LogError($"Error while importing items: {e.Message}");
+                    LoadChocoboSave(str);
                 }
             }
             // name, x, t, z, r, set

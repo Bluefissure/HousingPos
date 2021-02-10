@@ -201,10 +201,7 @@ namespace HousingPos
                 Marshal.Copy(dataPtr, posArr, 0, 2416);
                 if (BitConverter.ToString(posArr).Replace("-", " ").StartsWith("FF FF FF FF FF FF FF FF"))
                 {
-                    Config.SelectedItemIndex = -1;
                     HousingItemList.Clear();
-                    Config.HousingItemList.Clear();
-                    Config.Save();
                     return;
                 }
                 if (DateTime.Now > Config.lastPosPackageTime.AddSeconds(5))

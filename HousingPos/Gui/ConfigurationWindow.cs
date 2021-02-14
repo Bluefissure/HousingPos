@@ -221,26 +221,34 @@ namespace HousingPos.Gui
                             iconToFurniture.Add(item.Icon, furniture.RowId);
                     }
                 }
+                bool oldSave = false;
                 foreach (var chocoboItem in chocoboInput.list)
                 {
-                    var iconId = chocoboItem.categoryId;
-                    if (!iconToFurniture.ContainsKey(iconId))
+                    var iconIdOrFurnitureKey = chocoboItem.categoryId;
+                    var furniture = Plugin.Interface.Data.GetExcelSheet<HousingFurniture>().GetRow(iconIdOrFurnitureKey + 196608);
+                    if (furniture == null)
                     {
-                        failed += chocoboItem.count;
-                        continue;
+                        oldSave = true;
+                        var furnitureId = iconToFurniture.ContainsKey(iconIdOrFurnitureKey) ? (int)iconToFurniture[iconIdOrFurnitureKey] : -1;
+                        if(furnitureId == -1)
+                        {
+                            failed += chocoboItem.count;
+                            continue;
+                        }
+                        furniture = Plugin.Interface.Data.GetExcelSheet<HousingFurniture>().GetRow((uint)furnitureId);
                     }
-                    var furnitureId = iconToFurniture[iconId];
-                    var funiture = Plugin.Interface.Data.GetExcelSheet<HousingFurniture>().GetRow(furnitureId);
-                    var item = funiture.Item.Value;
+                    var item = furniture.Item.Value;
                     int len = chocoboItem.count;
                     for (int i = 0; i < len; i++)
                     {
                         var x = chocoboItem.posX[i];
                         var y = chocoboItem.posY[i];
                         var z = chocoboItem.posZ[i];
-                        var rotation = (float)(Math.Asin(chocoboItem.Rotation[i]) * 2);
+                        var rotation = oldSave ? (float)(Math.Asin(chocoboItem.Rotation[i]) * 2) : chocoboItem.Rotation[i];
+                        if (float.IsNaN(rotation))
+                            rotation = 0;
                         Config.HousingItemList.Add(new HousingItem(
-                            funiture.ModelKey, item.RowId, x, y, z, rotation, item.Name));
+                            furniture.ModelKey, item.RowId, x, y, z, rotation, item.Name));
                         successed++;
                     }
                 }

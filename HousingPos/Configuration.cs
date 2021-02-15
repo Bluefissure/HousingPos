@@ -15,14 +15,17 @@ namespace HousingPos
         public bool ShowTooltips = true;
         public bool DrawScreen = false;
         public float DrawDistance = 0;
-        public List<int> HiddenScreenItemHistory;
+        public List<int> HiddenScreenItemHistory = new List<int>();
+        public List<int> GroupingList = new List<int>();
         public bool PlaceAnywhere = false;
+        public bool Grouping = false;
         public bool UseFloatingWindow;
         public string UILanguage = "en";
         public List<HousingItem> HousingItemList = new List<HousingItem>();
 
         // public bool ForceMove = false;
         public bool BDTH = false;
+        public bool SingleExport = false;
         public bool SyncPos = false;
         public int SelectedItemIndex = -1;
         public float PlaceX = 0;

@@ -50,7 +50,7 @@ namespace HousingPos
             UIFuncHook.Disable();
             Config.PlaceAnywhere = false;
             Interface.ClientState.TerritoryChanged -= TerritoryChanged;
-            Interface.Framework.Network.OnNetworkMessage -= OnNetwork;
+            // Interface.Framework.Network.OnNetworkMessage -= OnNetwork;
             Interface.CommandManager.RemoveHandler("/xhouse");
             Gui?.Dispose();
             Interface?.Dispose();
@@ -63,6 +63,8 @@ namespace HousingPos
             Scanner = Interface.TargetModuleScanner;
             Config = pluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
             Config.Initialize(pluginInterface);
+            Config.Grouping = false;
+            Config.Save();
             _localizer = new Localizer(Config.UILanguage);
             // LoadOffset();
             Initialize();
@@ -71,7 +73,7 @@ namespace HousingPos
                 HelpMessage = "/xhouse - load housing item list."
             });
             Gui = new PluginUi(this);
-            Interface.Framework.Network.OnNetworkMessage += OnNetwork;
+            // Interface.Framework.Network.OnNetworkMessage += OnNetwork;
             Interface.ClientState.TerritoryChanged += TerritoryChanged;
         }
         public void Initialize()
@@ -119,10 +121,8 @@ namespace HousingPos
             Marshal.Copy(dataPtr, posArr, 0, 2416);
             if (BitConverter.ToString(posArr).Replace("-", " ").StartsWith("FF FF FF FF FF FF FF FF"))
             {
-                Config.SelectedItemIndex = -1;
                 HousingItemList.Clear();
-                Config.HousingItemList.Clear();
-                Config.HiddenScreenItemHistory = new List<int>();
+                Config.DrawScreen = false;
                 Config.Save();
                 this.LoadHousingFuncHook.Original(a1, a2);
                 return;
@@ -130,7 +130,7 @@ namespace HousingPos
             if (DateTime.Now > Config.lastPosPackageTime.AddSeconds(5))
             {
                 HousingItemList.Clear();
-                Config.HousingItemList.Clear();
+                // Config.HousingItemList.Clear();
                 Config.lastPosPackageTime = DateTime.Now;
                 Config.Save();
             }
@@ -185,7 +185,7 @@ namespace HousingPos
             PluginLog.LogError(msg);
             Interface.Framework.Gui.Chat.PrintError(msg);
         }
-
+        /*
         public void OnNetwork(IntPtr dataPtr, ushort opCode, uint sourceActorId, uint targetActorId, NetworkMessageDirection direction)
         {
             return;
@@ -266,6 +266,7 @@ namespace HousingPos
                 Config.Save();
             }
         }
+        */
     }
 
 }

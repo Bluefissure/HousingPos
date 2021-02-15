@@ -261,7 +261,7 @@ namespace HousingPos.Gui
                             Plugin.LogError($"Error while translating item#{item.ItemKey}: {e.Message}");
                         }
                     }
-                    Config.Save();
+                    Config.ResetRecord();
                     Plugin.Log(String.Format(_localizer.Localize("Imported {0} items from your clipboard."), Config.HousingItemList.Count));
                 }
                 catch (Exception e)
@@ -412,6 +412,7 @@ namespace HousingPos.Gui
                             furniture.ModelKey, item.RowId, x, y, z, rotation, item.Name));
                         successed++;
                     }
+                    Config.ResetRecord();
                 }
                 Plugin.Log(String.Format(_localizer.Localize("Imported {0} chocobo items from your clipboard, {1} failed."), successed, failed));
                 return true;

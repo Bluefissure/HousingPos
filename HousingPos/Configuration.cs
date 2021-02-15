@@ -47,6 +47,18 @@ namespace HousingPos
             _pluginInterface.SavePluginConfig(this);
         }
 
+        public void ResetRecord()
+        {
+            PlaceX = 0;
+            PlaceY = 0;
+            PlaceZ = 0;
+            PlaceRotate = 0;
+            SelectedItemIndex = -1;
+            HiddenScreenItemHistory.Clear();
+            GroupingList.Clear();
+            Save();
+        }
+
         #endregion
     }
 }

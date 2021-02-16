@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -17,7 +18,11 @@ namespace HousingPos.Objects
         public float Z;
         public float Rotate;
         public string Name;
-        public bool HiddenOnScreen = false;
+        public List<HousingItem> children = new List<HousingItem>();
+        // Relative distance to base furniture in spherical coordinate
+        // only useful when it's a child of a base item
+        // (radial distance, azimuthal angle, polar angle)
+        public Vector3 relative = Vector3.Zero;
 
         public HousingItem(ushort modelKey, uint itemKey, float x, float y, float z, float rotate, string name)
         {
@@ -29,5 +34,40 @@ namespace HousingPos.Objects
             Rotate = rotate;
             Name = name;
         }
+
+        public Vector3 CalcRelativeTo(HousingItem baseItem)
+        {
+            // be careful that x, y, z in game are different from traditional orthogonal
+            // traditional: X Y Z
+            // in-game:     Z X Y
+            // all variables here refer to in-game ones
+            double dx = this.X - baseItem.X;
+            double dy = this.Y - baseItem.Y;
+            double dz = this.Z - baseItem.Z;
+            float r = (float)Math.Sqrt(dx * dx + dy * dy + dz * dz);
+            float theta = (float)Math.Acos(dy / r);
+            float phi = (float)(Math.Atan2(dx, dz) - baseItem.Rotate);
+            relative = new Vector3(r, theta, phi);
+            return relative;
+        }
+
+        public void ReCalcChildrenPos()
+        {
+            for(int i = 0; i < children.Count; i++)
+            {
+                var relative = children[i].relative;
+                float r = relative.X;
+                float theta = relative.Y;
+                float phi = Rotate + relative.Z;
+                while (phi > Math.PI) phi -= (float)(Math.PI * 2);
+                while (phi < -Math.PI) phi += (float)(Math.PI * 2);
+                children[i].Rotate = phi;
+                children[i].Y = (float)(r * Math.Cos(theta)) + Y;
+                children[i].X = (float)(r * Math.Sin(theta) * Math.Sin(phi)) + X;
+                children[i].Z = (float)(r * Math.Sin(theta) * Math.Cos(phi)) + Z;
+            }
+
+        }
+
     }
 }

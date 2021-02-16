@@ -86,6 +86,10 @@ namespace HousingPos.Gui
             if (ImGui.Checkbox(_localizer.Localize("BDTH"), ref Config.BDTH)) Config.Save();
             if (Config.ShowTooltips && ImGui.IsItemHovered())
                 ImGui.SetTooltip(_localizer.Localize("BDTH integrate: leave the position set to BDTH."));
+            ImGui.SameLine();
+            if (ImGui.Checkbox(_localizer.Localize("Single Export"), ref Config.SingleExport)) Config.Save();
+            if (Config.ShowTooltips && ImGui.IsItemHovered())
+                ImGui.SetTooltip(_localizer.Localize("Add Export button to the single furnitures."));
             if (ImGui.Checkbox(_localizer.Localize("Draw on screen"), ref Config.DrawScreen)) Config.Save();
             if (Config.ShowTooltips && ImGui.IsItemHovered())
                 ImGui.SetTooltip(_localizer.Localize("Draw items on screen."));
@@ -100,7 +104,6 @@ namespace HousingPos.Gui
                         var lastIndex = Config.HiddenScreenItemHistory.Last();
                         if (lastIndex < Config.HousingItemList.Count && lastIndex >= 0)
                         {
-                            Config.HousingItemList[lastIndex].HiddenOnScreen = false;
                             Config.HiddenScreenItemHistory.RemoveAt(Config.HiddenScreenItemHistory.Count - 1);
                             Config.Save();
                         }
@@ -126,6 +129,12 @@ namespace HousingPos.Gui
             ImGui.SetNextItemWidth(100);
             if (ImGui.InputFloat("##placeX", ref Config.PlaceX, 0.01f, 0.1f))
             {
+                if (Config.SelectedItemIndex >= 0 && Config.SelectedItemIndex < Config.HousingItemList.Count) 
+                { 
+                    Config.HousingItemList[Config.SelectedItemIndex].X = Config.PlaceX;
+                    if (Config.HousingItemList[Config.SelectedItemIndex].children.Count > 0)
+                            Config.HousingItemList[Config.SelectedItemIndex].ReCalcChildrenPos();
+                }
                 Config.Save();
             }
             ImGui.SameLine();
@@ -135,6 +144,12 @@ namespace HousingPos.Gui
             ImGui.SetNextItemWidth(100);
             if (ImGui.InputFloat("##placeY", ref Config.PlaceY, 0.01f, 0.1f))
             {
+                if (Config.SelectedItemIndex >= 0 && Config.SelectedItemIndex < Config.HousingItemList.Count)
+                {
+                    Config.HousingItemList[Config.SelectedItemIndex].Y = Config.PlaceY;
+                    if (Config.HousingItemList[Config.SelectedItemIndex].children.Count > 0)
+                        Config.HousingItemList[Config.SelectedItemIndex].ReCalcChildrenPos();
+                }
                 Config.Save();
             }
             ImGui.SameLine();
@@ -144,6 +159,13 @@ namespace HousingPos.Gui
             ImGui.SetNextItemWidth(100);
             if (ImGui.InputFloat("##placeZ", ref Config.PlaceZ, 0.01f, 0.1f))
             {
+                if (Config.SelectedItemIndex >= 0 && Config.SelectedItemIndex < Config.HousingItemList.Count)
+                {
+                    Config.HousingItemList[Config.SelectedItemIndex].Z = Config.PlaceZ;
+                    if (Config.HousingItemList[Config.SelectedItemIndex].children.Count > 0)
+                        Config.HousingItemList[Config.SelectedItemIndex].ReCalcChildrenPos();
+                }
+                    Config.HousingItemList[Config.SelectedItemIndex].Z = Config.PlaceZ;
                 Config.Save();
             }
             ImGui.SameLine();
@@ -151,127 +173,27 @@ namespace HousingPos.Gui
             ImGui.Text(_localizer.Localize("Rotate:"));
             ImGui.SameLine();
             ImGui.SetNextItemWidth(100);
-            if (ImGui.InputFloat("##placeRotate", ref Config.PlaceRotate, 0.01f, 0.1f))
+            float rotateDegree = Config.PlaceRotate / (float)Math.PI * 180;
+            if (ImGui.InputFloat("##placeRotate", ref rotateDegree, 1f, 5f))
             {
+                rotateDegree = (rotateDegree + 180 + 360) % 360 - 180;
+                Config.PlaceRotate = rotateDegree / 180 * (float)Math.PI;
+                if (Config.SelectedItemIndex >= 0 && Config.SelectedItemIndex < Config.HousingItemList.Count)
+                {
+                    Config.HousingItemList[Config.SelectedItemIndex].Rotate = Config.PlaceRotate;
+                    if (Config.HousingItemList[Config.SelectedItemIndex].children.Count > 0)
+                        Config.HousingItemList[Config.SelectedItemIndex].ReCalcChildrenPos();
+                }
                 Config.Save();
             }
-        }
-        private void DrawItemOnScreen()
-        {
-            for (int i = 0; i < Config.HousingItemList.Count(); i++)
-            {
-                SharpDX.Vector3 playerPos = Plugin.Interface.ClientState.LocalPlayer.Position;
-                var housingItem = Config.HousingItemList[i];
-                var itemPos = new SharpDX.Vector3(housingItem.X, housingItem.Y, housingItem.Z);
-                if (housingItem.HiddenOnScreen) continue;
-                if (Config.DrawDistance > 0 && (playerPos - itemPos).Length() > Config.DrawDistance)
-                    continue;
-                var displayName = housingItem.Name;
-                if (Plugin.Interface.Framework.Gui.WorldToScreen(itemPos, out var screenCoords))
-                {
-                    ImGui.PushID("HousingItemWindow" + i);
-                    ImGui.SetNextWindowPos(new Vector2(screenCoords.X, screenCoords.Y));
-                    ImGui.SetNextWindowBgAlpha(0.8f);
-                    if (ImGui.Begin("HousingItem" + i,
-                        ImGuiWindowFlags.NoDecoration |
-                        ImGuiWindowFlags.AlwaysAutoResize |
-                        ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.NoMove |
-                        ImGuiWindowFlags.NoFocusOnAppearing | ImGuiWindowFlags.NoNav))
-                    {
-                        ImGui.Text($"{displayName}");
-                        ImGui.SameLine();
-                        if (Config.BDTH)
-                        {
-                            if (ImGui.Button(_localizer.Localize("Set") + "##ScreenItem" + i.ToString()))
-                            {
-                                Config.SelectedItemIndex = i;
-                                Config.PlaceX = housingItem.X;
-                                Config.PlaceY = housingItem.Y;
-                                Config.PlaceZ = housingItem.Z;
-                                Config.PlaceRotate = housingItem.Rotate;
-                                Plugin.CommandManager.ProcessCommand($"/bdth {housingItem.X} {housingItem.Y} {housingItem.Z} {housingItem.Rotate}");
-                                housingItem.HiddenOnScreen = true;
-                                Config.HiddenScreenItemHistory.Add(i);
-                                Config.Save();
-                            }
-                        }
-                        ImGui.End();
-                    }
 
-                    ImGui.PopID();
-                }
-            }
-        }
-
-        private bool LoadChocoboSave(string str)
-        {
-            try
-            {
-                var chocoboInput = JsonConvert.DeserializeObject<ChocoboInput>(str);
-                int failed = 0;
-                int successed = 0;
-                if (iconToFurniture.Count == 0)
-                {
-                    var housingFurnitures = Plugin.Interface.Data.GetExcelSheet<HousingFurniture>();
-                    foreach (var furniture in housingFurnitures)
-                    {
-                        var item = furniture.Item.Value;
-                        ushort iconId = item.Icon;
-                        if (!iconToFurniture.ContainsKey(iconId))
-                            iconToFurniture.Add(item.Icon, furniture.RowId);
-                    }
-                }
-                bool oldSave = false;
-                foreach (var chocoboItem in chocoboInput.list)
-                {
-                    var iconIdOrFurnitureKey = chocoboItem.categoryId;
-                    var furniture = Plugin.Interface.Data.GetExcelSheet<HousingFurniture>().GetRow(iconIdOrFurnitureKey + 196608);
-                    if (furniture == null)
-                    {
-                        oldSave = true;
-                        var furnitureId = iconToFurniture.ContainsKey(iconIdOrFurnitureKey) ? (int)iconToFurniture[iconIdOrFurnitureKey] : -1;
-                        if(furnitureId == -1)
-                        {
-                            failed += chocoboItem.count;
-                            continue;
-                        }
-                        furniture = Plugin.Interface.Data.GetExcelSheet<HousingFurniture>().GetRow((uint)furnitureId);
-                    }
-                    var item = furniture.Item.Value;
-                    int len = chocoboItem.count;
-                    for (int i = 0; i < len; i++)
-                    {
-                        var x = chocoboItem.posX[i];
-                        var y = chocoboItem.posY[i];
-                        var z = chocoboItem.posZ[i];
-                        var rotation = oldSave ? (float)(Math.Asin(chocoboItem.Rotation[i]) * 2) : chocoboItem.Rotation[i];
-                        if (float.IsNaN(rotation))
-                            rotation = 0;
-                        Config.HousingItemList.Add(new HousingItem(
-                            furniture.ModelKey, item.RowId, x, y, z, rotation, item.Name));
-                        successed++;
-                    }
-                }
-                Plugin.Log(String.Format(_localizer.Localize("Imported {0} chocobo items from your clipboard, {1} failed."), successed, failed));
-                return true;
-            }
-            catch (Exception e)
-            {
-                Plugin.LogError($"Error while importing chocobo save: {e.Message}");
-            }
-            return false;
-        }
-
-        private void DrawItemList()
-        {
-            ImGui.Columns(1);
             if (ImGui.Button(_localizer.Localize("Clear")))
             {
                 Config.HousingItemList.Clear();
                 Config.Save();
             }
             ImGui.SameLine();
-            if (ImGui.Button(_localizer.Localize("Sort")))
+            if (!Config.Grouping && ImGui.Button(_localizer.Localize("Sort")))
             {
                 Config.SelectedItemIndex = -1;
                 Config.HousingItemList.Sort((x, y) => {
@@ -343,7 +265,7 @@ namespace HousingPos.Gui
                             Plugin.LogError($"Error while translating item#{item.ItemKey}: {e.Message}");
                         }
                     }
-                    Config.Save();
+                    Config.ResetRecord();
                     Plugin.Log(String.Format(_localizer.Localize("Imported {0} items from your clipboard."), Config.HousingItemList.Count));
                 }
                 catch (Exception e)
@@ -352,8 +274,231 @@ namespace HousingPos.Gui
                     LoadChocoboSave(str);
                 }
             }
+            ImGui.SameLine(ImGui.GetColumnWidth() - 80);
+            if (ImGui.Button(_localizer.Localize(Config.Grouping ? "Grouping" : "Group"))) 
+            {
+                if (Config.Grouping)
+                {
+                    if (Config.GroupingList.Count > 1)
+                    {
+                        var baseItem = Config.HousingItemList[Config.GroupingList[0]];
+                        var childrenList = Config.GroupingList.GetRange(1, Config.GroupingList.Count - 1);
+                        childrenList.Sort();
+                        for (int i = childrenList.Count - 1; i >= 0; i--)
+                        {
+                            var index = childrenList[i];
+                            var housingItem = Config.HousingItemList[index];
+                            housingItem.CalcRelativeTo(baseItem);
+                            baseItem.children.Add(housingItem);
+                            Config.HousingItemList.RemoveAt(index);
+                        }
+                    }
+                    Config.GroupingList.Clear();
+                    Config.Grouping = false;
+                }
+                else
+                {
+                    Config.GroupingList.Clear();
+                    Config.Grouping = true;
+                }
+                Config.Save();
+            }
+        }
+        private void DrawItemOnScreen()
+        {
+            for (int i = 0; i < Config.HousingItemList.Count(); i++)
+            {
+                SharpDX.Vector3 playerPos = Plugin.Interface.ClientState.LocalPlayer.Position;
+                var housingItem = Config.HousingItemList[i];
+                var itemPos = new SharpDX.Vector3(housingItem.X, housingItem.Y, housingItem.Z);
+                if (Config.HiddenScreenItemHistory.IndexOf(i) >= 0) continue;
+                if (Config.DrawDistance > 0 && (playerPos - itemPos).Length() > Config.DrawDistance)
+                    continue;
+                var displayName = housingItem.Name;
+                if (Plugin.Interface.Framework.Gui.WorldToScreen(itemPos, out var screenCoords))
+                {
+                    ImGui.PushID("HousingItemWindow" + i);
+                    ImGui.SetNextWindowPos(new Vector2(screenCoords.X, screenCoords.Y));
+                    ImGui.SetNextWindowBgAlpha(0.8f);
+                    if (ImGui.Begin("HousingItem" + i,
+                        ImGuiWindowFlags.NoDecoration |
+                        ImGuiWindowFlags.AlwaysAutoResize |
+                        ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.NoMove |
+                        ImGuiWindowFlags.NoFocusOnAppearing | ImGuiWindowFlags.NoNav))
+                    {
+                        if (Config.Grouping && Config.GroupingList.IndexOf(i) != -1)
+                        {
+                            if (Config.GroupingList.IndexOf(i) == 0)
+                                ImGui.TextColored(new Vector4(1.0f, 0.0f, 1.0f, 1.0f), displayName);
+                            else
+                                ImGui.TextColored(new Vector4(1.0f, 1.0f, 0.0f, 1.0f), displayName);
+                        }
+                        else
+                        {
+                            ImGui.Text(displayName);
+                        }
+                        ImGui.SameLine();
+                        if (Config.BDTH)
+                        {
+                            if (ImGui.Button(_localizer.Localize("Set") + "##ScreenItem" + i.ToString()))
+                            {
+                                BDTHSet(i, housingItem);
+                                Config.HiddenScreenItemHistory.Add(i);
+                                Config.Save();
+                            }
+                        }
+                        ImGui.SameLine();
+                        if (Config.Grouping)
+                        {
+                            var index = Config.GroupingList.IndexOf(i);
+                            if (ImGui.Button(_localizer.Localize(index == -1 ? "Add" : "Del") + "##Group_" + i.ToString()))
+                            {
+                                if (index == -1)
+                                    Config.GroupingList.Add(i);
+                                else
+                                    Config.GroupingList.RemoveAt(index);
+                            }
+                            ImGui.NextColumn();
+                        }
+                        ImGui.End();
+                    }
+
+                    ImGui.PopID();
+                }
+            }
+        }
+
+        private bool LoadChocoboSave(string str)
+        {
+            try
+            {
+                var chocoboInput = JsonConvert.DeserializeObject<ChocoboInput>(str);
+                int failed = 0;
+                int successed = 0;
+                if (iconToFurniture.Count == 0)
+                {
+                    var housingFurnitures = Plugin.Interface.Data.GetExcelSheet<HousingFurniture>();
+                    foreach (var furniture in housingFurnitures)
+                    {
+                        var item = furniture.Item.Value;
+                        ushort iconId = item.Icon;
+                        if (!iconToFurniture.ContainsKey(iconId))
+                            iconToFurniture.Add(item.Icon, furniture.RowId);
+                    }
+                }
+                bool oldSave = false;
+                foreach (var chocoboItem in chocoboInput.list)
+                {
+                    var iconIdOrFurnitureKey = chocoboItem.categoryId;
+                    var furniture = Plugin.Interface.Data.GetExcelSheet<HousingFurniture>().GetRow(iconIdOrFurnitureKey + 196608);
+                    if (furniture == null)
+                    {
+                        oldSave = true;
+                        var furnitureId = iconToFurniture.ContainsKey(iconIdOrFurnitureKey) ? (int)iconToFurniture[iconIdOrFurnitureKey] : -1;
+                        if(furnitureId == -1)
+                        {
+                            failed += chocoboItem.count;
+                            continue;
+                        }
+                        furniture = Plugin.Interface.Data.GetExcelSheet<HousingFurniture>().GetRow((uint)furnitureId);
+                    }
+                    var item = furniture.Item.Value;
+                    int len = chocoboItem.count;
+                    for (int i = 0; i < len; i++)
+                    {
+                        var x = chocoboItem.posX[i];
+                        var y = chocoboItem.posY[i];
+                        var z = chocoboItem.posZ[i];
+                        var rotation = oldSave ? (float)(Math.Asin(chocoboItem.Rotation[i]) * 2) : chocoboItem.Rotation[i];
+                        if (float.IsNaN(rotation))
+                            rotation = 0;
+                        Config.HousingItemList.Add(new HousingItem(
+                            furniture.ModelKey, item.RowId, x, y, z, rotation, item.Name));
+                        successed++;
+                    }
+                    Config.ResetRecord();
+                }
+                Plugin.Log(String.Format(_localizer.Localize("Imported {0} chocobo items from your clipboard, {1} failed."), successed, failed));
+                return true;
+            }
+            catch (Exception e)
+            {
+                Plugin.LogError($"Error while importing chocobo save: {e.Message}");
+            }
+            return false;
+        }
+
+        private void BDTHSet(int i, HousingItem housingItem)
+        {
+            Config.SelectedItemIndex = i;
+            Config.PlaceX = housingItem.X;
+            Config.PlaceY = housingItem.Y;
+            Config.PlaceZ = housingItem.Z;
+            Config.PlaceRotate = housingItem.Rotate;
+            Plugin.CommandManager.ProcessCommand($"/bdth {housingItem.X} {housingItem.Y} {housingItem.Z} {housingItem.Rotate}");
+            if (housingItem.children.Count > 0)
+                housingItem.ReCalcChildrenPos();
+            Config.Save();
+        }
+
+        private void DrawRow(int i, HousingItem housingItem, int childIndex = -1)
+        {
+            ImGui.Text($"{housingItem.X:N3}"); ImGui.NextColumn();
+            ImGui.Text($"{housingItem.Y:N3}"); ImGui.NextColumn();
+            ImGui.Text($"{housingItem.Z:N3}"); ImGui.NextColumn();
+            ImGui.Text($"{housingItem.Rotate:N3}"); ImGui.NextColumn();
+            string uniqueID = childIndex == -1 ? i.ToString() : i.ToString() + "_" + childIndex.ToString();
+            if (Config.BDTH)
+            {
+                if (ImGui.Button(_localizer.Localize("Set") + "##" + uniqueID))
+                {
+                    BDTHSet(i, housingItem);
+                }
+                ImGui.NextColumn();
+            }
+            if (Config.Grouping )
+            {
+                var index = Config.GroupingList.IndexOf(i);
+                var buttonText = housingItem.children.Count == 0 ? (index == -1 ? "Add" : "Del") : "Disband";
+                if (childIndex == -1 && ImGui.Button(_localizer.Localize(buttonText) + "##Group_" + uniqueID))
+                {
+                    if (buttonText == "Add")
+                        Config.GroupingList.Add(i);
+                    else if (buttonText == "Del")
+                        Config.GroupingList.RemoveAt(index);
+                    else if (buttonText == "Disband")
+                    {
+                        for (int j = 0; j < housingItem.children.Count; j++)
+                        {
+                            Config.HousingItemList.Add(housingItem.children[j]);
+                        }
+                        housingItem.children.Clear();
+                        Config.Save();
+                    }
+                }
+                ImGui.NextColumn();
+            }
+
+            if (Config.SingleExport)
+            {
+                if (ImGui.Button(_localizer.Localize("Export") + "##Single_" + uniqueID))
+                {
+                    List<HousingItem> tempList = new List<HousingItem>();
+                    tempList.Add(housingItem);
+                    string str = JsonConvert.SerializeObject(tempList);
+                    Win32Clipboard.CopyTextToClipboard(str);
+                    Plugin.Log(String.Format(_localizer.Localize("Exported {0} item to your clipboard."), tempList.Count));
+                }
+                ImGui.NextColumn();
+            }
+        }
+        private void DrawItemList()
+        {
             // name, x, t, z, r, set
-            int columns = Config.BDTH ? 6 : 5;
+            int columns = 5;
+            if (Config.BDTH) columns += 1;
+            if (Config.SingleExport) columns += 1;
+            if (Config.Grouping) columns += 1;
             ImGui.Columns(columns, "ItemList", true);
             ImGui.Separator();
             ImGui.Text(_localizer.Localize("Name")); ImGui.NextColumn();
@@ -365,36 +510,56 @@ namespace HousingPos.Gui
             {
                 ImGui.Text(_localizer.Localize("BDTH Set")); ImGui.NextColumn();
             }
+            if (Config.Grouping)
+            {
+                ImGui.Text(_localizer.Localize("Grouping")); ImGui.NextColumn();
+            }
+            if (Config.SingleExport)
+            {
+                ImGui.Text(_localizer.Localize("Single Export")); ImGui.NextColumn();
+            }
             ImGui.Separator();
             for (int i = 0; i < Config.HousingItemList.Count(); i++)
             {
                 var housingItem = Config.HousingItemList[i];
                 var displayName = housingItem.Name;
                 if (i == Config.SelectedItemIndex)
-                {
                     displayName = '\ue06f' + displayName;
-                }
-                ImGui.Text(displayName); ImGui.NextColumn();
-                ImGui.Text($"{housingItem.X:N3}"); ImGui.NextColumn();
-                ImGui.Text($"{housingItem.Y:N3}"); ImGui.NextColumn();
-                ImGui.Text($"{housingItem.Z:N3}"); ImGui.NextColumn();
-                ImGui.Text($"{housingItem.Rotate:N3}"); ImGui.NextColumn();
-                if (Config.BDTH)
+                if(housingItem.children.Count == 0)
                 {
-                    if (ImGui.Button(_localizer.Localize("Set") + "##" + i.ToString()))
+                    if(Config.Grouping && Config.GroupingList.IndexOf(i) != -1)
                     {
-                        Config.SelectedItemIndex = i;
-
-                        Config.PlaceX = housingItem.X;
-                        Config.PlaceY = housingItem.Y;
-                        Config.PlaceZ = housingItem.Z;
-                        Config.PlaceRotate = housingItem.Rotate;
-                        Plugin.CommandManager.ProcessCommand($"/bdth {housingItem.X} {housingItem.Y} {housingItem.Z} {housingItem.Rotate}");
-                        // Config.ForceMove = true;
-                        Config.Save();
+                        if(Config.GroupingList.IndexOf(i) == 0)
+                            ImGui.TextColored(new Vector4(1.0f, 0.0f, 1.0f, 1.0f), displayName);
+                        else
+                            ImGui.TextColored(new Vector4(1.0f, 1.0f, 0.0f, 1.0f), displayName);
+                    }
+                    else
+                    {
+                        ImGui.Text(displayName);
                     }
                     ImGui.NextColumn();
+                    DrawRow(i, housingItem);
                 }
+                else
+                {
+                    bool open1 = ImGui.TreeNode(displayName);
+                    ImGui.NextColumn();
+                    DrawRow(i, housingItem);
+                    if (open1)
+                    {
+                        for(int j=0; j < housingItem.children.Count; j++)
+                        {
+                            var childItem = housingItem.children[j];
+                            displayName = childItem.Name;
+                            ImGui.Text(displayName);
+                            ImGui.NextColumn();
+                            DrawRow(i, childItem, j);
+                        }
+                        ImGui.TreePop();
+                    }
+                }
+                
                 ImGui.Separator();
             }
             

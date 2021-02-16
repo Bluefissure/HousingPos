@@ -49,6 +49,13 @@ namespace HousingPos.Gui
             zh.Add("BDTH Set", "BDTH 设置");
             zh.Add("Clear", "清空");
             zh.Add("Copy", "复制");
+            zh.Add("Single Export", "单独导出");
+            zh.Add("Add Export button to the single furnitures.", "对单独的家具添加导出按钮。");
+            zh.Add("Group", "分组");
+            zh.Add("Add", "添加");
+            zh.Add("Del", "删除");
+            zh.Add("Disband", "解散");
+            zh.Add("Grouping", "分组中");
             zh.Add("Place Anywhere", "任意摆放");
             zh.Add("Load {0} furnitures.", "读取了{0}个家具。");
             zh.Add("Place item at anywhere.", "将物品移动到任何地方。");

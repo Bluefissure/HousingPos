@@ -95,9 +95,9 @@ namespace HousingPos
         private void UIFuncDetour(Int64 a1, UInt32 a2, char a3)
         {
             //Log($"TestFuncHook: {a1}, {a2}, {(int)a3}");
-            if (a2 == 67 && a3 == 1)
+            if(a2 == 67 && a3 == 1 )
             {
-                if (HousingItemList.Count > 0 && Config.HousingItemList.Count == 0)
+                if(HousingItemList.Count > 0 && Config.HousingItemList.Count == 0)
                 {
                     Log(String.Format(_localizer.Localize("Load {0} furnitures."), HousingItemList.Count));
                     Config.HousingItemList = HousingItemList.ToList();
@@ -193,7 +193,7 @@ namespace HousingPos
             var OpcodeMoveItem = Int32.Parse(Opcode.MoveItem, NumberStyles.HexNumber);
             if (direction == NetworkMessageDirection.ZoneDown)
             {
-                if (opCode != OpcodeLoadHousing || !Config.Recording)
+                if (opCode != OpcodeLoadHousing)
                 {
                     return;
                 }
@@ -230,8 +230,8 @@ namespace HousingPos
                             item.Name
                         ));
                 }
-                Log($"Load {Config.HousingItemList.Count} items.");
-                Config.Save();
+                //Log($"Load {Config.HousingItemList.Count} items.");
+                //Config.Save();
             }
             else
             {

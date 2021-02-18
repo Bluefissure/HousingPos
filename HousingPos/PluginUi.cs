@@ -15,6 +15,7 @@ namespace HousingPos
             _plugin = plugin;
             _plugin.Interface.UiBuilder.OnBuildUi += Draw;
             _plugin.Interface.UiBuilder.OnOpenConfigUi += (sender, args) => ConfigWindow.Visible = true;
+            _plugin.Interface.UiBuilder.OnOpenConfigUi += (sender, args) => ConfigWindow.CanUpload = false;
         }
 
         private void Draw()

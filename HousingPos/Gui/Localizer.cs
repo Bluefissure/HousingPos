@@ -38,6 +38,7 @@ namespace HousingPos.Gui
             zh.Add("Automatically place item at specified position.", "自动将家具摆放在相应位置。");
             zh.Add("Export", "导出");
             zh.Add("Import", "导入");
+            zh.Add("Upload", "上传");
             zh.Add("Copied {0} items to your clipboard.", "将{0}个物品复制到了剪贴板。");
             zh.Add("Exported {0} items to your clipboard.", "将{0}个物品导出到了剪贴板。");
             zh.Add("Imported {0} items from your clipboard.", "从剪贴板导入了{0}个物品。");
@@ -47,12 +48,22 @@ namespace HousingPos.Gui
             zh.Add("Rotate", "旋转");
             zh.Add("Set", "设置");
             zh.Add("BDTH Set", "BDTH 设置");
-            zh.Add("Clear", "清空");
             zh.Add("Copy", "复制");
             zh.Add("Single Export", "单独导出");
+            zh.Add("Single Upload", "单独上传");
             zh.Add("Add Export button to the single furnitures.", "对单独的家具添加导出按钮。");
             zh.Add("Group", "分组");
             zh.Add("Add", "添加");
+            zh.Add("Anonymous", "匿名");
+            zh.Add("Clear", "清空");
+            zh.Add("Close", "关闭");
+            zh.Add("Cancel", "取消");
+            zh.Add("Location", "位置");
+            zh.Add("Send Data", "发送数据");
+            zh.Add("Nameit:", "命名:");
+            zh.Add("Selected Tags:", "已选标签:");
+            zh.Add("Can Select Tags:", "可选标签:");
+            zh.Add("Uper:", "署名:");
             zh.Add("Del", "删除");
             zh.Add("Disband", "解散");
             zh.Add("Grouping", "分组中");
@@ -71,6 +82,10 @@ namespace HousingPos.Gui
             zh.Add("Undo", "撤销");
             zh.Add("Undo the on-screen setting.", "撤销屏幕摆放。");
             zh.Add("Drawing Distance:", "绘制距离:");
+            zh.Add("Export To Cloud","导出到云");
+            zh.Add("Name Your Export","命名你的导出内容。");
+            zh.Add("Tag Your Export", "为导出内容添加标签。");
+            zh.Add("Exported {0} items to Cloud.", "将{0}个物品导出到了服务器。");
             zh.Add("Only draw items within this distance to your character. (0 for unlimited)", "只绘制距离以内的家具。（0为无限）");
         }
     }

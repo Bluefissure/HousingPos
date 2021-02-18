@@ -23,6 +23,14 @@ namespace HousingPos
         public string UILanguage = "en";
         public List<HousingItem> HousingItemList = new List<HousingItem>();
         public bool Recording = true;
+        public string Nameit = "";
+        public List<string> Tags = new List<string>();
+        public List<bool> TagsSelectList = new List<bool>();
+        public string Uper = "";
+        public string Location = "薰衣草苗圃";
+        public string Size = "S";
+        public List<HousingItem> UploadItems = new List<HousingItem>();
+        public bool Anonymous = true;
 
         // public bool ForceMove = false;
         public bool BDTH = false;

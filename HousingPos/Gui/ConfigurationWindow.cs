@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Dalamud.Plugin;
 using Dalamud.Game.Chat;
 using ImGuiNET;
@@ -19,12 +20,19 @@ namespace HousingPos.Gui
         public Configuration Config => Plugin.Config;
         private readonly string[] _languageList;
         private int _selectedLanguage;
+        private readonly string[] _locationList;
+        private int _selectedLocation;
+        private readonly string[] _sizeList;
+        private int _selectedSize;
         private Localizer _localizer;
+        private string CustomTag = string.Empty;
         private Dictionary<uint, uint> iconToFurniture = new Dictionary<uint, uint> { };
 
         public ConfigurationWindow(HousingPos plugin) : base(plugin)
         {
             _languageList = new string[] { "en", "zh" };
+            _locationList = new string[] { "薰衣草苗圃","高脚孤丘","海雾村","白银乡"};
+            _sizeList = new string[] { "S","M","L"};
             _localizer = new Localizer(Config.UILanguage);
         }
 
@@ -46,6 +54,130 @@ namespace HousingPos.Gui
                 }
                 ImGui.EndChild();
             }
+        }
+        protected override void DrawUploadUi()
+        {
+            uint buf_size = 255;
+            ImGui.SetNextWindowSize(new Vector2(400, 300), ImGuiCond.FirstUseEver);
+            if (!ImGui.Begin($"{Plugin.Name} v{Assembly.GetExecutingAssembly().GetName().Version}-Upload", ref WindowCanUpload, ImGuiWindowFlags.NoScrollWithMouse))
+            {
+                ImGui.End();
+                return;
+            }
+            if (ImGui.BeginChild("##SettingUpload"))
+            {
+                string str = JsonConvert.SerializeObject(Config.UploadItems);
+                ImGui.TextUnformatted(_localizer.Localize("Location"));
+                ImGui.SameLine();
+                ImGui.SetNextItemWidth(200);
+                if (ImGui.Combo("##SetLocation", ref _selectedLocation, _locationList, _locationList.Length))
+                {
+                    Config.Location = _locationList[_selectedLocation];
+                    Config.Save();
+                }
+                ImGui.SameLine();
+                ImGui.SetNextItemWidth(100);
+                if (ImGui.Combo("##SetSize", ref _selectedSize, _sizeList, _sizeList.Length))
+                {
+                    Config.Size = _sizeList[_selectedSize];
+                    Config.Save();
+                }
+                ImGui.Checkbox("Anonymous", ref Config.Anonymous);
+
+                ImGui.Text(_localizer.Localize("Nameit:"));
+                ImGui.SameLine();
+                ImGui.SetNextItemWidth(ImGui.GetWindowWidth() - ImGui.CalcTextSize(_localizer.Localize("Nameit:")).X - (16 * ImGui.GetIO().FontGlobalScale));
+                ImGui.InputText("##Nameit", ref Config.Nameit, buf_size);
+                if(Config.Tags.Count()==0)
+                {
+                    Config.Tags = new List<string>() { "组合", "全屋", "和风", "现代", "古风", "卡通" };
+                    Config.TagsSelectList = new List<bool>() { false, false, false, false, false, false };
+                    Config.Save();
+                }
+
+                ImGui.Text(_localizer.Localize("Selected Tags:"));
+                for (int i = 0; i < Config.Tags.Count(); i++)
+                {
+                    var showText = Config.Tags[i];
+                    Vector4 Selected = new Vector4(255, 71, 71, 255);
+                    if (Config.TagsSelectList[i])
+                    {
+                        ImGui.SameLine();
+                        ImGui.SetNextItemWidth(ImGui.CalcTextSize(Config.Tags[i]).X);
+                        ImGui.TextColored(Selected, showText);
+                    }
+                }
+
+                ImGui.Text(_localizer.Localize("Can Select Tags:"));
+                ImGui.SameLine();
+                for (int i = 0; i < Config.Tags.Count(); i++)
+                {
+                    if (i % 6 != 0)
+                        ImGui.SameLine();
+                    ImGui.SetNextItemWidth(ImGui.CalcTextSize(Config.Tags[i]).X);
+                    var buttonText = Config.Tags[i];
+                    //Vector4 Unselect = new Vector4(0, 255, 0, 255);
+                    //Vector4 Selected = new Vector4(255, 0, 0, 255);
+                    if (ImGui.RadioButton(_localizer.Localize(buttonText), Config.TagsSelectList[i]))
+                    {
+                        Config.TagsSelectList[i] = !Config.TagsSelectList[i];
+                        Config.Save();
+                    }
+                }
+                ImGui.Text("Add Custom Tags:");
+                ImGui.SameLine();
+                ImGui.SetNextItemWidth(50);
+                ImGui.InputText("##CustomTags",ref this.CustomTag, 20);
+                if (!string.IsNullOrEmpty(this.CustomTag) && ImGui.Button(_localizer.Localize("Add")))
+                {
+                    ImGui.SameLine();
+                    Config.Tags.Add(this.CustomTag);
+                    Config.TagsSelectList.Add(false);
+                    this.CustomTag = string.Empty;
+                }
+
+                if (!Config.Anonymous)
+                {
+                    ImGui.Text(_localizer.Localize("Uper:"));
+                    ImGui.SameLine();
+                    ImGui.SetNextItemWidth(ImGui.GetWindowWidth() - ImGui.CalcTextSize(_localizer.Localize("Uper:")).X - (16 * ImGui.GetIO().FontGlobalScale));
+                    ImGui.InputText("##Uper", ref Config.Uper, buf_size);
+                }
+                else
+                    Config.Uper = "Anonymous";
+
+                if (ImGui.Button(_localizer.Localize("Send Data")))
+                {
+                    Config.Save();
+                    try
+                    {
+                        //Plugin.Log(str);
+                        List<string> tempTags = new List<string>();
+                        for(int i=0;i< Config.Tags.Count();i++){
+                            if(Config.TagsSelectList[i])
+                                tempTags.Add( Config.Tags[i]);
+                        }
+                        string tags = JsonConvert.SerializeObject(tempTags);
+                        Task<string> posttask = HttpPost.Post(Config.Location + '-' + Config.Size, Config.Nameit, str, tags, Config.Uper);
+                        string res = posttask.Result;
+                        Plugin.Log(res);
+                        Plugin.Log(String.Format(_localizer.Localize("Exported {0} items to Cloud."), Config.UploadItems.Count));
+                    }
+                    catch (Exception e)
+                    {
+                        Plugin.LogError($"Error while Postdata: {e.Message}");
+                    }
+                    CanUpload = false;
+                }
+                ImGui.SameLine();
+                if (ImGui.Button(_localizer.Localize("Cancel")))
+                {
+                    Config.Save();
+                    CanUpload = false;
+                }
+                Config.Save();
+                ImGui.EndChild();
+            }
             
         }
 
@@ -57,14 +189,11 @@ namespace HousingPos.Gui
             }
         }
 
-
-
         private void DrawGeneralSettings()
         {
             if (ImGui.Checkbox(_localizer.Localize("Recording"), ref Config.Recording)) Config.Save();
             if (Config.ShowTooltips && ImGui.IsItemHovered())
                 ImGui.SetTooltip(_localizer.Localize("Automatically record housing item list."));
-            ImGui.SameLine(ImGui.GetColumnWidth() - 80);
 
             ImGui.TextUnformatted(_localizer.Localize("Language:"));
             if (Plugin.Config.ShowTooltips && ImGui.IsItemHovered())
@@ -273,6 +402,14 @@ namespace HousingPos.Gui
                     Plugin.LogError($"Error while importing items: {e.Message}");
                     LoadChocoboSave(str);
                 }
+            }
+            ImGui.SameLine();
+            if (ImGui.Button(_localizer.Localize("Export To Cloud")))
+            {
+                Config.UploadItems = Config.HousingItemList;
+                CanUpload = true;
+                Config.Nameit = "";
+                Config.Save();
             }
             ImGui.SameLine(ImGui.GetColumnWidth() - 80);
             if (ImGui.Button(_localizer.Localize(Config.Grouping ? "Grouping" : "Group"))) 
@@ -487,7 +624,17 @@ namespace HousingPos.Gui
                     tempList.Add(housingItem);
                     string str = JsonConvert.SerializeObject(tempList);
                     Win32Clipboard.CopyTextToClipboard(str);
-                    Plugin.Log(String.Format(_localizer.Localize("Exported {0} item to your clipboard."), tempList.Count));
+                    Plugin.Log(String.Format(_localizer.Localize("Exported {0} items to your clipboard."), tempList.Count));
+                }
+                ImGui.SameLine();
+                if (ImGui.Button(_localizer.Localize("Upload") + "##Single_" + uniqueID))
+                {
+                    List<HousingItem> tempList = new List<HousingItem>();
+                    tempList.Add(housingItem);
+                    Config.UploadItems = tempList;
+                    CanUpload = true;
+                    Config.Nameit = "";
+                    Config.Save();
                 }
                 ImGui.NextColumn();
             }

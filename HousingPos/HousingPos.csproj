@@ -109,6 +109,7 @@
     <Compile Include="Objects\ChocoboItem.cs" />
     <Compile Include="Objects\HousingItem.cs" />
     <Compile Include="Objects\HousingPosLanguage.cs" />
+    <Compile Include="Objects\HttpPost.cs" />
     <Compile Include="Objects\OpcodeDefinition.cs" />
     <Compile Include="PluginUi.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

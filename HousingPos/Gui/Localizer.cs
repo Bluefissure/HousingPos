@@ -63,6 +63,7 @@ namespace HousingPos.Gui
             zh.Add("Nameit:", "命名:");
             zh.Add("Selected Tags:", "已选标签:");
             zh.Add("Can Select Tags:", "可选标签:");
+            zh.Add("Add Custom Tags:", "自订标签");
             zh.Add("Uper:", "署名:");
             zh.Add("Del", "删除");
             zh.Add("Disband", "解散");

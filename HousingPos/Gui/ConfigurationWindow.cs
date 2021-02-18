@@ -112,7 +112,7 @@ namespace HousingPos.Gui
                 ImGui.SameLine();
                 for (int i = 0; i < Config.Tags.Count(); i++)
                 {
-                    if (i % 6 != 0)
+                    if (i % 8 != 0)
                         ImGui.SameLine();
                     ImGui.SetNextItemWidth(ImGui.CalcTextSize(Config.Tags[i]).X);
                     var buttonText = Config.Tags[i];
@@ -124,7 +124,7 @@ namespace HousingPos.Gui
                         Config.Save();
                     }
                 }
-                ImGui.Text("Add Custom Tags:");
+                ImGui.Text(_localizer.Localize("Add Custom Tags:"));
                 ImGui.SameLine();
                 ImGui.SetNextItemWidth(50);
                 ImGui.InputText("##CustomTags",ref this.CustomTag, 20);
@@ -132,7 +132,7 @@ namespace HousingPos.Gui
                 {
                     ImGui.SameLine();
                     Config.Tags.Add(this.CustomTag);
-                    Config.TagsSelectList.Add(false);
+                    Config.TagsSelectList.Add(true);
                     this.CustomTag = string.Empty;
                 }
 

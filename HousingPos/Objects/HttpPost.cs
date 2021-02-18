@@ -23,8 +23,6 @@ namespace HousingPos.Objects
                 {"Uper",uper }
             };
             HttpContent data = new FormUrlEncodedContent(values);
-            Console.WriteLine(str);
-            Console.WriteLine(data);
             //创建一个异步HTTP请求，当请求返回时继续处理
             HttpResponseMessage response = await httpClient.PostAsync(Uri, data);
             response.EnsureSuccessStatusCode();

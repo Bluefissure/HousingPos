@@ -66,7 +66,6 @@ namespace HousingPos.Gui
             }
             if (ImGui.BeginChild("##SettingUpload"))
             {
-                string str = JsonConvert.SerializeObject(Config.UploadItems);
                 ImGui.TextUnformatted(_localizer.Localize("Location"));
                 ImGui.SameLine();
                 ImGui.SetNextItemWidth(200);
@@ -149,16 +148,19 @@ namespace HousingPos.Gui
                 if (ImGui.Button(_localizer.Localize("Send Data")))
                 {
                     Config.Save();
+                    string str = JsonConvert.SerializeObject(Config.UploadItems);
+                    //Plugin.Log(str);
+                    List<string> tempTags = new List<string>();
+                    for (int i = 0; i < Config.Tags.Count(); i++)
+                    {
+                        if (Config.TagsSelectList[i])
+                            tempTags.Add(Config.Tags[i]);
+                    }
+                    string tags = JsonConvert.SerializeObject(tempTags);
+                    //Plugin.Log(tags);
                     try
                     {
-                        //Plugin.Log(str);
-                        List<string> tempTags = new List<string>();
-                        for(int i=0;i< Config.Tags.Count();i++){
-                            if(Config.TagsSelectList[i])
-                                tempTags.Add( Config.Tags[i]);
-                        }
-                        string tags = JsonConvert.SerializeObject(tempTags);
-                        Task<string> posttask = HttpPost.Post(Config.Location + '-' + Config.Size, Config.Nameit, str, tags, Config.Uper);
+                        Task<string> posttask = HttpPost.Post(Config.Location + Config.Size, Config.Nameit, str, tags, Config.Uper);
                         string res = posttask.Result;
                         Plugin.Log(res);
                         Plugin.Log(String.Format(_localizer.Localize("Exported {0} items to Cloud."), Config.UploadItems.Count));

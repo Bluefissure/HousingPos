@@ -109,21 +109,6 @@ namespace HousingPos
                     Log(_localizer.Localize("Please clear the furniture list and re-enter house to load current furniture list."));
                 }
             }
-            if (a2 == 48 && a3 == 1 && Config.Recording)
-            {
-                if (HousingItemList.Count > 0 && Config.HousingItemList.Count == 0)
-                {
-                    Log(String.Format(_localizer.Localize("Load {0} furnitures."), HousingItemList.Count));
-                    Log($"偷家有风险，使用需谨慎.");
-                    Config.HousingItemList = HousingItemList.ToList();
-                    Config.HiddenScreenItemHistory = new List<int>();
-                    Config.Save();
-                }
-                else
-                {
-                    Log(_localizer.Localize("Please clear the furniture list and re-enter house to load current furniture list."));
-                }
-            }
             this.UIFuncHook.Original(a1, a2, a3);
         }
 

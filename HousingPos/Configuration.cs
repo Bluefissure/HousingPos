@@ -22,7 +22,6 @@ namespace HousingPos
         public bool UseFloatingWindow;
         public string UILanguage = "en";
         public List<HousingItem> HousingItemList = new List<HousingItem>();
-        public bool Recording = true;
         public string Nameit = "";
         public List<string> Tags = new List<string>();
         public List<bool> TagsSelectList = new List<bool>();

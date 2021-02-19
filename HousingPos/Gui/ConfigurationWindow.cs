@@ -150,17 +150,17 @@ namespace HousingPos.Gui
                     Config.Save();
                     string str = JsonConvert.SerializeObject(Config.UploadItems);
                     //Plugin.Log(str);
-                    List<string> tempTags = new List<string>();
+                    string tags = "";
                     for (int i = 0; i < Config.Tags.Count(); i++)
                     {
                         if (Config.TagsSelectList[i])
-                            tempTags.Add(Config.Tags[i]);
+                            tags += Config.Tags[i]+",";
                     }
-                    string tags = JsonConvert.SerializeObject(tempTags);
+                    tags = tags.Remove(tags.Length-1);
                     //Plugin.Log(tags);
                     try
                     {
-                        Task<string> posttask = HttpPost.Post(Config.Location + Config.Size, Config.Nameit, str, tags, Config.Uper);
+                        Task<string> posttask = HttpPost.Post(Config.Location, Config.Size, Config.Nameit, str, tags, Config.Uper);
                         string res = posttask.Result;
                         Plugin.Log(res);
                         Plugin.Log(String.Format(_localizer.Localize("Exported {0} items to Cloud."), Config.UploadItems.Count));
@@ -181,6 +181,25 @@ namespace HousingPos.Gui
                 ImGui.EndChild();
             }
             
+        }
+        protected override void DrawImportUi()
+        {
+            ImGui.SetNextWindowSize(new Vector2(520, 430), ImGuiCond.FirstUseEver);
+            if (!ImGui.Begin($"{Plugin.Name} v{Assembly.GetExecutingAssembly().GetName().Version}-Import", ref WindowCanImport, ImGuiWindowFlags.NoScrollWithMouse))
+            {
+                ImGui.End();
+                return;
+            }
+            if (CanImport && ImGui.BeginChild("##ImportCloud"))
+            {
+                DrawImportList();
+                if (ImGui.Button(_localizer.Localize("Cancel")))
+                {
+                    CanImport = false;
+                }
+                ImGui.EndChild();
+            }
+
         }
 
         protected override void DrawScreen()
@@ -409,6 +428,14 @@ namespace HousingPos.Gui
                 Config.Nameit = "";
                 Config.Save();
             }
+            ImGui.SameLine();
+            if (ImGui.Button(_localizer.Localize("Import From Cloud")))
+            {
+                Task<string> str = HttpPost.GetMap();
+                Config.CloudMap = JsonConvert.DeserializeObject<List<CloudMap>>(str.Result);
+                Config.Save();
+                CanImport = true;
+            }
             ImGui.SameLine(ImGui.GetColumnWidth() - 80);
             if (ImGui.Button(_localizer.Localize(Config.Grouping ? "Grouping" : "Group"))) 
             {
@@ -576,6 +603,43 @@ namespace HousingPos.Gui
             Config.Save();
         }
 
+        private void DrawImportRow(int i, CloudMap cloudMap)
+        {
+            string uniqueId = i.ToString();
+            ImGui.Text($"{cloudMap.Name}"); ImGui.NextColumn();
+            ImGui.Text($"{cloudMap.Tags}"); ImGui.NextColumn();
+            if(ImGui.Button(_localizer.Localize("Import") + "##" + uniqueId))
+            {
+                Plugin.Log(cloudMap.Hash);
+                Task<string> cloudItems = HttpPost.GetItems(cloudMap.Hash);
+                string str = cloudItems.Result;
+                //Plugin.Log(str);
+                try
+                {
+                    Config.HousingItemList = JsonConvert.DeserializeObject<List<HousingItem>>(str);
+                    foreach (var item in Config.HousingItemList)
+                    {
+                        try
+                        {
+                            item.Name = Plugin.Interface.Data.GetExcelSheet<Item>().GetRow(item.ItemKey).Name;
+                        }
+                        catch (Exception e)
+                        {
+                            Plugin.LogError($"Error while translating item#{item.ItemKey}: {e.Message}");
+                        }
+                    }
+                    Config.ResetRecord();
+                    Plugin.Log(String.Format(_localizer.Localize("Imported {0} items from Cloud."), Config.HousingItemList.Count));
+                }
+                catch (Exception e)
+                {
+                    Plugin.LogError($"Error while importing items: {e.Message}");
+                    LoadChocoboSave(str);
+                }
+            }
+            ImGui.NextColumn();
+        }
+
         private void DrawRow(int i, HousingItem housingItem, int childIndex = -1)
         {
             ImGui.Text($"{housingItem.X:N3}"); ImGui.NextColumn();
@@ -636,6 +700,22 @@ namespace HousingPos.Gui
                 }
                 ImGui.NextColumn();
             }
+        }
+        private void DrawImportList()
+        {
+            int columns = 3;
+            ImGui.Columns(columns, "CloudItemsList", true);
+            ImGui.Separator();
+            ImGui.Text(_localizer.Localize("Name")); ImGui.NextColumn();
+            ImGui.Text(_localizer.Localize("Tags")); ImGui.NextColumn();
+            ImGui.Text(_localizer.Localize("Import")); ImGui.NextColumn();
+            ImGui.Separator();
+            for (int i = 0; i < Config.CloudMap.Count(); i++)
+            {
+                DrawImportRow(i, Config.CloudMap[i]);
+                ImGui.Separator();
+            }
+
         }
         private void DrawItemList()
         {

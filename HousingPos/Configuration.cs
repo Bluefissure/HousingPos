@@ -30,6 +30,7 @@ namespace HousingPos
         public string Size = "S";
         public List<HousingItem> UploadItems = new List<HousingItem>();
         public bool Anonymous = true;
+        public List<CloudMap> CloudMap = new List<CloudMap>();
 
         // public bool ForceMove = false;
         public bool BDTH = false;

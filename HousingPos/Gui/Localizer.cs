@@ -64,6 +64,7 @@ namespace HousingPos.Gui
             zh.Add("Selected Tags:", "已选标签:");
             zh.Add("Can Select Tags:", "可选标签:");
             zh.Add("Add Custom Tags:", "自订标签");
+            zh.Add("Imported {0} items from Cloud.", "从服务器导入了{0}个家具");
             zh.Add("Uper:", "署名:");
             zh.Add("Del", "删除");
             zh.Add("Disband", "解散");
@@ -84,6 +85,7 @@ namespace HousingPos.Gui
             zh.Add("Undo the on-screen setting.", "撤销屏幕摆放。");
             zh.Add("Drawing Distance:", "绘制距离:");
             zh.Add("Export To Cloud","导出到云");
+            zh.Add("Import From Cloud", "自云导入");
             zh.Add("Name Your Export","命名你的导出内容。");
             zh.Add("Tag Your Export", "为导出内容添加标签。");
             zh.Add("Exported {0} items to Cloud.", "将{0}个物品导出到了服务器。");

@@ -6,6 +6,7 @@ namespace HousingPos.Gui
     {
         protected bool WindowVisible;
         protected bool WindowCanUpload;
+        protected bool WindowCanImport;
         public virtual bool Visible
         {
             get => WindowVisible;
@@ -15,6 +16,11 @@ namespace HousingPos.Gui
         {
             get => WindowCanUpload;
             set => WindowCanUpload = value;
+        }
+        public virtual bool CanImport
+        {
+            get => WindowCanImport;
+            set => WindowCanImport = value;
         }
         protected T Plugin { get; }
 
@@ -31,6 +37,10 @@ namespace HousingPos.Gui
                 {
                     DrawUploadUi();
                 }
+                if (CanImport)
+                {
+                    DrawImportUi();
+                }
             }
             DrawScreen();
         }
@@ -38,5 +48,6 @@ namespace HousingPos.Gui
         protected abstract void DrawUi();
         protected abstract void DrawScreen();
         protected abstract void DrawUploadUi();
+        protected abstract void DrawImportUi();
     }
 }

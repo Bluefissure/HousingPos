@@ -31,6 +31,8 @@ namespace HousingPos
         public List<HousingItem> UploadItems = new List<HousingItem>();
         public bool Anonymous = true;
         public List<CloudMap> CloudMap = new List<CloudMap>();
+        public string DefaultCloudUri = "https://api.4c43.work/ffxiv";
+        public bool DefaultCloudService = true;
 
         // public bool ForceMove = false;
         public bool BDTH = false;

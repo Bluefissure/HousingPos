@@ -64,8 +64,10 @@ namespace HousingPos.Gui
             zh.Add("Selected Tags:", "已选标签:");
             zh.Add("Can Select Tags:", "可选标签:");
             zh.Add("Add Custom Tags:", "自订标签");
+            zh.Add("Use Default Cloud Service", "使用默认云服务");
             zh.Add("Imported {0} items from Cloud.", "从服务器导入了{0}个家具");
             zh.Add("Uper:", "署名:");
+            zh.Add("Server Address:", "服务器地址:");
             zh.Add("Del", "删除");
             zh.Add("Disband", "解散");
             zh.Add("Grouping", "分组中");

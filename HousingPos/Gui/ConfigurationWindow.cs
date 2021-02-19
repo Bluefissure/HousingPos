@@ -66,6 +66,15 @@ namespace HousingPos.Gui
             }
             if (ImGui.BeginChild("##SettingUpload"))
             {
+                ImGui.Checkbox(_localizer.Localize("Use Default Cloud Service"),ref Config.DefaultCloudService);
+                if (!Config.DefaultCloudService)
+                {
+                    ImGui.TextUnformatted(_localizer.Localize("Server Address:"));
+                    ImGui.SameLine();
+                    ImGui.SetNextItemWidth(ImGui.GetWindowWidth() - ImGui.CalcTextSize(_localizer.Localize("Server Address:")).X - (16 * ImGui.GetIO().FontGlobalScale));
+                    ImGui.InputText("##ServerAddr", ref Config.DefaultCloudUri, 255);
+                    Config.Save();
+                }
                 ImGui.TextUnformatted(_localizer.Localize("Location"));
                 ImGui.SameLine();
                 ImGui.SetNextItemWidth(200);
@@ -160,7 +169,7 @@ namespace HousingPos.Gui
                     //Plugin.Log(tags);
                     try
                     {
-                        Task<string> posttask = HttpPost.Post(Config.Location, Config.Size, Config.Nameit, str, tags, Config.Uper);
+                        Task<string> posttask = HttpPost.Post(Config.DefaultCloudUri,Config.Location, Config.Size, Config.Nameit, str, tags, Config.Uper);
                         string res = posttask.Result;
                         Plugin.Log(res);
                         Plugin.Log(String.Format(_localizer.Localize("Exported {0} items to Cloud."), Config.UploadItems.Count));
@@ -431,7 +440,7 @@ namespace HousingPos.Gui
             ImGui.SameLine();
             if (ImGui.Button(_localizer.Localize("Import From Cloud")))
             {
-                Task<string> str = HttpPost.GetMap();
+                Task<string> str = HttpPost.GetMap(Config.DefaultCloudUri);
                 Config.CloudMap = JsonConvert.DeserializeObject<List<CloudMap>>(str.Result);
                 Config.Save();
                 CanImport = true;
@@ -611,7 +620,7 @@ namespace HousingPos.Gui
             if(ImGui.Button(_localizer.Localize("Import") + "##" + uniqueId))
             {
                 Plugin.Log(cloudMap.Hash);
-                Task<string> cloudItems = HttpPost.GetItems(cloudMap.Hash);
+                Task<string> cloudItems = HttpPost.GetItems(Config.DefaultCloudUri, cloudMap.Hash);
                 string str = cloudItems.Result;
                 //Plugin.Log(str);
                 try

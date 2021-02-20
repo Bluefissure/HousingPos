@@ -172,20 +172,30 @@ namespace HousingPos.Gui
                         if (Config.TagsSelectList[i])
                             tags += Config.Tags[i]+",";
                     }
-                    tags = tags.Remove(tags.Length-1);
-                    //Plugin.Log(tags);
-                    try
+                    if(tags.Length > 0)
                     {
-                        Task<string> posttask = HttpPost.Post(Config.DefaultCloudUri,Config.Location, Config.Size, Config.UploadName, str, tags, Config.Uploader);
-                        string res = posttask.Result;
-                        Plugin.Log(res);
-                        Plugin.Log(String.Format(_localizer.Localize("Exported {0} items to Cloud."), Config.UploadItems.Count));
+                        tags = tags.Remove(tags.Length - 1);
+                        //Plugin.Log(tags);
+                        Task<string> posttask = HttpPost.Post(Config.DefaultCloudUri, Config.Location, Config.Size, Config.UploadName, str, tags, Config.Uploader);
+                        posttask.ContinueWith((t) => {
+
+                            try
+                            {
+                                string res = posttask.Result;
+                                Plugin.Log(res);
+                                Plugin.Log(String.Format(_localizer.Localize("Exported {0} items to Cloud."), Config.UploadItems.Count));
+                                CanUpload = false;
+                            }
+                            catch (Exception e)
+                            {
+                                Plugin.LogError($"Error while Postdata: {e.Message}");
+                            }
+                        });
                     }
-                    catch (Exception e)
+                    else
                     {
-                        Plugin.LogError($"Error while Postdata: {e.Message}");
+                        Plugin.LogError($"Error while Postdata: Empty tags");
                     }
-                    CanUpload = false;
                 }
                 ImGui.SameLine();
                 if (ImGui.Button(_localizer.Localize("Cancel")))
@@ -355,16 +365,20 @@ namespace HousingPos.Gui
             ImGui.SameLine();
             if (ImGui.Button(_localizer.Localize("Import From Cloud")))
             {
-                try
+                Task<string> strTask = HttpPost.GetMap(Config.DefaultCloudUri);
+                strTask.ContinueWith((t) =>
                 {
-                    Task<string> str = HttpPost.GetMap(Config.DefaultCloudUri);
-                    Config.CloudMap = JsonConvert.DeserializeObject<List<CloudMap>>(str.Result);
-                    Config.Save();
-                    CanImport = true;
-                }catch(Exception e)
-                {
-                    Plugin.LogError($"Error Importing from cloud: {e.Message}");
-                }
+                    try
+                    {
+                        Config.CloudMap = JsonConvert.DeserializeObject<List<CloudMap>>(t.Result);
+                        Config.Save();
+                        CanImport = true;
+                    }
+                    catch (Exception e)
+                    {
+                        Plugin.LogError($"Error Importing from cloud: {e.Message}");
+                    }
+                });
             }
 
             if (ImGui.Button(_localizer.Localize("Clear")))
@@ -630,32 +644,35 @@ namespace HousingPos.Gui
             ImGui.Text($"{cloudMap.Tags}"); ImGui.NextColumn();
             if(ImGui.Button(_localizer.Localize("Import") + "##" + uniqueId))
             {
-                Plugin.Log(cloudMap.Hash);
+                PluginLog.Log(cloudMap.Hash);
                 Task<string> cloudItems = HttpPost.GetItems(Config.DefaultCloudUri, cloudMap.Hash);
-                string str = cloudItems.Result;
-                //Plugin.Log(str);
-                try
-                {
-                    Config.HousingItemList = JsonConvert.DeserializeObject<List<HousingItem>>(str);
-                    foreach (var item in Config.HousingItemList)
+                cloudItems.ContinueWith((t) => {
+                    string str = t.Result;
+                    //Plugin.Log(str);
+                    try
                     {
-                        try
+                        Config.HousingItemList = JsonConvert.DeserializeObject<List<HousingItem>>(str);
+                        foreach (var item in Config.HousingItemList)
                         {
-                            item.Name = Plugin.Interface.Data.GetExcelSheet<Item>().GetRow(item.ItemKey).Name;
+                            try
+                            {
+                                item.Name = Plugin.Interface.Data.GetExcelSheet<Item>().GetRow(item.ItemKey).Name;
+                            }
+                            catch (Exception e)
+                            {
+                                Plugin.LogError($"Error while translating item#{item.ItemKey}: {e.Message}");
+                            }
                         }
-                        catch (Exception e)
-                        {
-                            Plugin.LogError($"Error while translating item#{item.ItemKey}: {e.Message}");
-                        }
+                        Config.ResetRecord();
+                        Plugin.Log(String.Format(_localizer.Localize("Imported {0} items from Cloud."), Config.HousingItemList.Count));
                     }
-                    Config.ResetRecord();
-                    Plugin.Log(String.Format(_localizer.Localize("Imported {0} items from Cloud."), Config.HousingItemList.Count));
-                }
-                catch (Exception e)
-                {
-                    Plugin.LogError($"Error while importing items: {e.Message}");
-                    LoadChocoboSave(str);
-                }
+                    catch (Exception e)
+                    {
+                        Plugin.LogError($"Error while importing items: {e.Message}");
+                        LoadChocoboSave(str);
+                    }
+                });
+                
             }
             ImGui.NextColumn();
         }

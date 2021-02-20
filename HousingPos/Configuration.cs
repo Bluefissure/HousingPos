@@ -22,17 +22,17 @@ namespace HousingPos
         public bool UseFloatingWindow;
         public string UILanguage = "en";
         public List<HousingItem> HousingItemList = new List<HousingItem>();
-        public string Nameit = "";
+        public string UploadName = "";
         public List<string> Tags = new List<string>();
         public List<bool> TagsSelectList = new List<bool>();
-        public string Uper = "";
+        public string Uploader = "";
         public string Location = "Lavender Beds";
         public string Size = "S";
         public List<HousingItem> UploadItems = new List<HousingItem>();
         public bool Anonymous = true;
         public List<CloudMap> CloudMap = new List<CloudMap>();
         public string DefaultCloudUri = "https://api.4c43.work/ffxiv";
-        public bool DefaultCloudService = true;
+        // public bool DefaultCloudService = true;
 
         // public bool ForceMove = false;
         public bool BDTH = false;

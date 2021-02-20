@@ -30,10 +30,10 @@ namespace HousingPos.Gui
 
         public ConfigurationWindow(HousingPos plugin) : base(plugin)
         {
+            _localizer = new Localizer(Config.UILanguage);
             _languageList = new string[] { "en", "zh" };
             _locationList = new string[] { _localizer.Localize("Lavender Beds"), _localizer.Localize("The Goblet"), _localizer.Localize("Mist"), _localizer.Localize("Shirogane") };
             _sizeList = new string[] { "S","M","L"};
-            _localizer = new Localizer(Config.UILanguage);
         }
 
         protected override void DrawUi()
@@ -59,20 +59,18 @@ namespace HousingPos.Gui
         {
             uint buf_size = 255;
             ImGui.SetNextWindowSize(new Vector2(400, 300), ImGuiCond.FirstUseEver);
-            if (!ImGui.Begin($"{Plugin.Name} v{Assembly.GetExecutingAssembly().GetName().Version}-Upload", ref WindowCanUpload, ImGuiWindowFlags.NoScrollWithMouse))
+            if (!ImGui.Begin($"{Plugin.Name} - Upload", ref WindowCanUpload, ImGuiWindowFlags.NoScrollWithMouse))
             {
                 ImGui.End();
                 return;
             }
             if (ImGui.BeginChild("##SettingUpload"))
             {
-                ImGui.Checkbox(_localizer.Localize("Use Default Cloud Service"),ref Config.DefaultCloudService);
-                if (!Config.DefaultCloudService)
+                ImGui.TextUnformatted(_localizer.Localize("Server Address:"));
+                ImGui.SameLine();
+                ImGui.SetNextItemWidth(ImGui.GetWindowWidth() - ImGui.CalcTextSize(_localizer.Localize("Server Address:")).X - (16 * ImGui.GetIO().FontGlobalScale));
+                if (ImGui.InputText("##ServerAddr", ref Config.DefaultCloudUri, 255))
                 {
-                    ImGui.TextUnformatted(_localizer.Localize("Server Address:"));
-                    ImGui.SameLine();
-                    ImGui.SetNextItemWidth(ImGui.GetWindowWidth() - ImGui.CalcTextSize(_localizer.Localize("Server Address:")).X - (16 * ImGui.GetIO().FontGlobalScale));
-                    ImGui.InputText("##ServerAddr", ref Config.DefaultCloudUri, 255);
                     Config.Save();
                 }
                 ImGui.TextUnformatted(_localizer.Localize("Location"));
@@ -90,15 +88,21 @@ namespace HousingPos.Gui
                     Config.Size = _sizeList[_selectedSize];
                     Config.Save();
                 }
-                ImGui.Checkbox("Anonymous", ref Config.Anonymous);
+                ImGui.Checkbox(_localizer.Localize("Anonymous"), ref Config.Anonymous);
 
-                ImGui.Text(_localizer.Localize("Nameit:"));
+                ImGui.Text(_localizer.Localize("Upload Name:"));
                 ImGui.SameLine();
-                ImGui.SetNextItemWidth(ImGui.GetWindowWidth() - ImGui.CalcTextSize(_localizer.Localize("Nameit:")).X - (16 * ImGui.GetIO().FontGlobalScale));
-                ImGui.InputText("##Nameit", ref Config.Nameit, buf_size);
+                ImGui.SetNextItemWidth(ImGui.GetWindowWidth() - ImGui.CalcTextSize(_localizer.Localize("Upload Name:")).X - (16 * ImGui.GetIO().FontGlobalScale));
+                ImGui.InputText("##UploadName", ref Config.UploadName, buf_size);
                 if(Config.Tags.Count()==0)
                 {
-                    Config.Tags = new List<string>() { _localizer.Localize("Combination"), _localizer.Localize("WholeHouse"), _localizer.Localize("Far Eastern-style"), _localizer.Localize("Modern-style"), _localizer.Localize("Plants"), _localizer.Localize("Loft-style"), _localizer.Localize("Cartoon - style")};
+                    Config.Tags = new List<string>() { _localizer.Localize("Combination"), 
+                        _localizer.Localize("WholeHouse"),
+                        _localizer.Localize("Far Eastern-style"), 
+                        _localizer.Localize("Modern-style"), 
+                        _localizer.Localize("Plants"), 
+                        _localizer.Localize("Loft-style"), 
+                        _localizer.Localize("Cartoon-style")};
                     Config.TagsSelectList = new List<bool>() { false, false, false, false, false, false, false};
                     Config.Save();
                 }
@@ -116,7 +120,7 @@ namespace HousingPos.Gui
                     }
                 }
 
-                ImGui.Text(_localizer.Localize("Can Select Tags:"));
+                ImGui.Text(_localizer.Localize("Available Tags:"));
                 ImGui.SameLine();
                 for (int i = 0; i < Config.Tags.Count(); i++)
                 {
@@ -136,23 +140,26 @@ namespace HousingPos.Gui
                 ImGui.SameLine();
                 ImGui.SetNextItemWidth(50);
                 ImGui.InputText("##CustomTags",ref this.CustomTag, 20);
-                if (!string.IsNullOrEmpty(this.CustomTag) && ImGui.Button(_localizer.Localize("Add")))
+                if (!string.IsNullOrEmpty(this.CustomTag))
                 {
                     ImGui.SameLine();
-                    Config.Tags.Add(this.CustomTag);
-                    Config.TagsSelectList.Add(true);
-                    this.CustomTag = string.Empty;
+                    if (ImGui.Button(_localizer.Localize("Add")))
+                    {
+                        Config.Tags.Add(this.CustomTag);
+                        Config.TagsSelectList.Add(true);
+                        this.CustomTag = string.Empty;
+                    }
                 }
 
                 if (!Config.Anonymous)
                 {
-                    ImGui.Text(_localizer.Localize("Uper:"));
+                    ImGui.Text(_localizer.Localize("Uploader:"));
                     ImGui.SameLine();
-                    ImGui.SetNextItemWidth(ImGui.GetWindowWidth() - ImGui.CalcTextSize(_localizer.Localize("Uper:")).X - (16 * ImGui.GetIO().FontGlobalScale));
-                    ImGui.InputText("##Uper", ref Config.Uper, buf_size);
+                    ImGui.SetNextItemWidth(ImGui.GetWindowWidth() - ImGui.CalcTextSize(_localizer.Localize("Uploader:")).X - (16 * ImGui.GetIO().FontGlobalScale));
+                    ImGui.InputText("##Uploader", ref Config.Uploader, buf_size);
                 }
                 else
-                    Config.Uper = "Anonymous";
+                    Config.Uploader = "Anonymous";
 
                 if (ImGui.Button(_localizer.Localize("Send Data")))
                 {
@@ -169,7 +176,7 @@ namespace HousingPos.Gui
                     //Plugin.Log(tags);
                     try
                     {
-                        Task<string> posttask = HttpPost.Post(Config.DefaultCloudUri,Config.Location, Config.Size, Config.Nameit, str, tags, Config.Uper);
+                        Task<string> posttask = HttpPost.Post(Config.DefaultCloudUri,Config.Location, Config.Size, Config.UploadName, str, tags, Config.Uploader);
                         string res = posttask.Result;
                         Plugin.Log(res);
                         Plugin.Log(String.Format(_localizer.Localize("Exported {0} items to Cloud."), Config.UploadItems.Count));
@@ -194,7 +201,7 @@ namespace HousingPos.Gui
         protected override void DrawImportUi()
         {
             ImGui.SetNextWindowSize(new Vector2(520, 430), ImGuiCond.FirstUseEver);
-            if (!ImGui.Begin($"{Plugin.Name} v{Assembly.GetExecutingAssembly().GetName().Version}-Import", ref WindowCanImport, ImGuiWindowFlags.NoScrollWithMouse))
+            if (!ImGui.Begin($"{Plugin.Name} - Import", ref WindowCanImport, ImGuiWindowFlags.NoScrollWithMouse))
             {
                 ImGui.End();
                 return;
@@ -275,11 +282,6 @@ namespace HousingPos.Gui
                     Config.Save();
                 }
             }
-            /*
-            if (ImGui.Checkbox(_localizer.Localize("Force Move"), ref Config.ForceMove)) Config.Save();
-            if (Config.ShowTooltips && ImGui.IsItemHovered())
-                ImGui.SetTooltip(_localizer.Localize("Force the position when moving items (cannot be seen until re-enter)."));
-            */
             ImGui.Text("X:");
             ImGui.SameLine();
             ImGui.SetNextItemWidth(100);
@@ -341,6 +343,28 @@ namespace HousingPos.Gui
                         Config.HousingItemList[Config.SelectedItemIndex].ReCalcChildrenPos();
                 }
                 Config.Save();
+            }
+            if (ImGui.Button(_localizer.Localize("Export To Cloud")))
+            {
+                Config.UploadItems = Config.HousingItemList;
+                CanUpload = true;
+                Config.Tags.Clear();
+                Config.UploadName = "";
+                Config.Save();
+            }
+            ImGui.SameLine();
+            if (ImGui.Button(_localizer.Localize("Import From Cloud")))
+            {
+                try
+                {
+                    Task<string> str = HttpPost.GetMap(Config.DefaultCloudUri);
+                    Config.CloudMap = JsonConvert.DeserializeObject<List<CloudMap>>(str.Result);
+                    Config.Save();
+                    CanImport = true;
+                }catch(Exception e)
+                {
+                    Plugin.LogError($"Error Importing from cloud: {e.Message}");
+                }
             }
 
             if (ImGui.Button(_localizer.Localize("Clear")))
@@ -429,22 +453,6 @@ namespace HousingPos.Gui
                     Plugin.LogError($"Error while importing items: {e.Message}");
                     LoadChocoboSave(str);
                 }
-            }
-            ImGui.SameLine();
-            if (ImGui.Button(_localizer.Localize("Export To Cloud")))
-            {
-                Config.UploadItems = Config.HousingItemList;
-                CanUpload = true;
-                Config.Nameit = "";
-                Config.Save();
-            }
-            ImGui.SameLine();
-            if (ImGui.Button(_localizer.Localize("Import From Cloud")))
-            {
-                Task<string> str = HttpPost.GetMap(Config.DefaultCloudUri);
-                Config.CloudMap = JsonConvert.DeserializeObject<List<CloudMap>>(str.Result);
-                Config.Save();
-                CanImport = true;
             }
             ImGui.SameLine(ImGui.GetColumnWidth() - 80);
             if (ImGui.Button(_localizer.Localize(Config.Grouping ? "Grouping" : "Group"))) 
@@ -617,6 +625,8 @@ namespace HousingPos.Gui
         {
             string uniqueId = i.ToString();
             ImGui.Text($"{cloudMap.Name}"); ImGui.NextColumn();
+            ImGui.Text($"{cloudMap.Location}"); ImGui.NextColumn();
+            ImGui.Text($"{cloudMap.Size}"); ImGui.NextColumn();
             ImGui.Text($"{cloudMap.Tags}"); ImGui.NextColumn();
             if(ImGui.Button(_localizer.Localize("Import") + "##" + uniqueId))
             {
@@ -698,16 +708,6 @@ namespace HousingPos.Gui
                     Win32Clipboard.CopyTextToClipboard(str);
                     Plugin.Log(String.Format(_localizer.Localize("Exported {0} items to your clipboard."), tempList.Count));
                 }
-                ImGui.SameLine();
-                if (ImGui.Button(_localizer.Localize("Upload") + "##Single_" + uniqueID))
-                {
-                    List<HousingItem> tempList = new List<HousingItem>();
-                    tempList.Add(housingItem);
-                    Config.UploadItems = tempList;
-                    CanUpload = true;
-                    Config.Nameit = "";
-                    Config.Save();
-                }
                 ImGui.NextColumn();
             }
         }
@@ -724,9 +724,13 @@ namespace HousingPos.Gui
             ImGui.Separator();
             for (int i = 0; i < Config.CloudMap.Count(); i++)
             {
-                DrawImportRow(i, Config.CloudMap[i]);
-                ImGui.Separator();
+                if (Config.CloudMap[i] != null)
+                {
+                    DrawImportRow(i, Config.CloudMap[i]);
+                    ImGui.Separator();
+                }
             }
+            ImGui.Columns(1);
 
         }
         private void DrawItemList()

@@ -29,24 +29,23 @@ namespace HousingPos.Objects
     
     public class HttpPost
     {
-        public static async Task<string> Post(string Uri,string Location, string Size, string Nameit, string str,string tags,string uper)
+        public static async Task<string> Post(string Uri,string Location, string Size, string UploadName, string str, string tags, string Uploader)
         {
             HttpClient httpClient = new HttpClient();
             if (str==null)
             {
-                return "You Can`t Upload An Empty List.";
+                return "You Can't Upload An Empty List.";
             }
             var values = new Dictionary<string, string>
             {
-                {"Location",Location},
-                {"Size",Size },
-                {"Named",Nameit },
-                {"Items",str },
-                {"Tags",tags },
-                {"Uper",uper }
+                {"Location", Location},
+                {"Size", Size },
+                {"Named", UploadName },
+                {"Items", str },
+                {"Tags", tags },
+                {"Uper", Uploader }
             };
             HttpContent data = new FormUrlEncodedContent(values);
-            //创建一个异步HTTP请求，当请求返回时继续处理
             HttpResponseMessage response = await httpClient.PostAsync(Uri + "/index.php", data);
             response.EnsureSuccessStatusCode();
             string resultStr = await response.Content.ReadAsStringAsync();
@@ -55,7 +54,6 @@ namespace HousingPos.Objects
         public static async Task<string> GetMap(string Uri)
         {
             HttpClient httpClient = new HttpClient();
-            //创建一个异步HTTP请求，当请求返回时继续处理
             HttpResponseMessage response = await httpClient.GetAsync(Uri + "/map.json");
             response.EnsureSuccessStatusCode();
             string resultStr = await response.Content.ReadAsStringAsync();
@@ -64,7 +62,6 @@ namespace HousingPos.Objects
         public static async Task<string> GetItems(string Uri, string hash)
         {
             HttpClient httpClient = new HttpClient();
-            //创建一个异步HTTP请求，当请求返回时继续处理
             HttpResponseMessage response = await httpClient.GetAsync(Uri + "/result/" + hash + ".json");
             response.EnsureSuccessStatusCode();
             string resultStr = await response.Content.ReadAsStringAsync();

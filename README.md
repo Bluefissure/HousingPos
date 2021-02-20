@@ -30,6 +30,7 @@ Import：Import the furniture position preset from the clipboard. Hint：Importe
 
 Group：
 - Click the `group` button to enter the group mode. Furniture can be added to the group. The first furniture will be used as a benchmark, and the rest will be calculated by relative coordinates.    
+- After selection, click the `grouping` button to exit the group mode. The grouped furniture will be added to the data of the first furniture. At this time, the furniture combination can be exported by using `Single Export`.
 - Check `Single Export` to export a furniture or group separately.  
 - For application grouping, you need to manually change the coordinates of the benchmark furniture at **XYZR** *(consistent with BDTH coordinates)*, and then the rest of the furniture in the group will automatically calculate the updated coordinates.  
 ### Draw on screen

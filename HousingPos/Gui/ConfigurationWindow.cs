@@ -379,16 +379,18 @@ namespace HousingPos.Gui
                     Win32Clipboard.CopyTextToClipboard(str);
                     Plugin.Log(String.Format(_localizer.Localize("Exported {0} items to your clipboard."), tempList.Count));
                 }
-                
-                ImGui.SameLine();
-                if (ImGui.Button(_localizer.Localize("Cloud Export") + "##Single_" + uniqueID))
+                if(housingItem.children.Count > 0)
                 {
-                    List<HousingItem> tempList = new List<HousingItem>();
-                    tempList.Add(housingItem);
-                    Config.UploadItems = tempList;
-                    CanUpload = true;
-                    Config.UploadName = "";
-                    Config.Save();
+                    ImGui.SameLine();
+                    if (ImGui.Button(_localizer.Localize("Cloud Export") + "##Single_" + uniqueID))
+                    {
+                        List<HousingItem> tempList = new List<HousingItem>();
+                        tempList.Add(housingItem);
+                        Config.UploadItems = tempList;
+                        CanUpload = true;
+                        Config.UploadName = "";
+                        Config.Save();
+                    }
                 }
                 ImGui.NextColumn();
             }
@@ -614,7 +616,7 @@ namespace HousingPos.Gui
         {
             string uniqueId = i.ToString();
             ImGui.Text($"{cloudMap.Name}"); ImGui.NextColumn();
-            ImGui.Text($"{cloudMap.Location}"); ImGui.NextColumn();
+            ImGui.Text(_localizer.Localize($"{cloudMap.Location}")); ImGui.NextColumn();
             ImGui.Text($"{cloudMap.Size}"); ImGui.NextColumn();
             ImGui.Text($"{cloudMap.Tags}"); ImGui.NextColumn();
             if (ImGui.Button(_localizer.Localize("Import") + "##" + uniqueId))
@@ -695,7 +697,7 @@ namespace HousingPos.Gui
                 ImGui.SetNextItemWidth(200);
                 if (ImGui.Combo("##SetLocation", ref _selectedLocation, _locationList, _locationList.Length))
                 {
-                    Config.Location = _locationList[_selectedLocation];
+                    Config.Location = _localizer.Localize(_locationList[_selectedLocation]);
                     Config.Save();
                 }
                 ImGui.SameLine();

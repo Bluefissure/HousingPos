@@ -230,8 +230,8 @@ namespace HousingPos
                             item.Name
                         ));
                 }
-                // Log($"Load {Config.HousingItemList.Count} items.");
-                // Config.Save();
+                //Log($"Load {Config.HousingItemList.Count} items.");
+                //Config.Save();
             }
             else
             {

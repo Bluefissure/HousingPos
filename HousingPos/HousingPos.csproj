@@ -34,26 +34,27 @@
   <ItemGroup>
     <Reference Include="Dalamud, Version=5.1.1.1, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\Git\_Dalamud_\Dalamud\Dalamud\bin\Debug\Dalamud.dll</HintPath>
+      <HintPath>..\..\Dalamud\bin\Dalamud.dll</HintPath>
     </Reference>
     <Reference Include="ImGui.NET, Version=1.72.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\Git\_Dalamud_\Dalamud\Dalamud\bin\Debug\ImGui.NET.dll</HintPath>
+      <HintPath>..\..\Dalamud\bin\ImGui.NET.dll</HintPath>
     </Reference>
     <Reference Include="ImGuiScene, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\Git\_Dalamud_\Dalamud\Dalamud\bin\Debug\ImGuiScene.dll</HintPath>
+      <HintPath>..\..\Dalamud\bin\ImGuiScene.dll</HintPath>
     </Reference>
     <Reference Include="IndexRange, Version=1.0.0.0, Culture=neutral, PublicKeyToken=35e6a3c4212514c6, processorArchitecture=MSIL">
       <HintPath>..\packages\IndexRange.1.0.0\lib\net471\IndexRange.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Lumina, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\Git\_Dalamud_\Dalamud\Dalamud\bin\Debug\Lumina.dll</HintPath>
+      <HintPath>..\..\Dalamud\bin\Lumina.dll</HintPath>
     </Reference>
     <Reference Include="Lumina.Excel, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\Git\_Dalamud_\Dalamud\Dalamud\bin\Debug\Lumina.Excel.dll</HintPath>
+      <HintPath>..\..\Dalamud\bin\Lumina.Excel.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -108,6 +109,7 @@
     <Compile Include="Objects\ChocoboInput.cs" />
     <Compile Include="Objects\HousingItem.cs" />
     <Compile Include="Objects\HousingPosLanguage.cs" />
+    <Compile Include="Objects\HttpPost.cs" />
     <Compile Include="Objects\OpcodeDefinition.cs" />
     <Compile Include="PluginUi.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -117,10 +119,5 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>xcopy $(TargetDir)\HousingPos.dll D:\Code\Git\_Dalamud_\Dalamud\Dalamud\bin\Debug\XIVLauncher\testPlugins\HousingPos\1.0.0.0\ /K /D /H /Y
-xcopy $(TargetDir)\HousingPos.pdb D:\Code\Git\_Dalamud_\Dalamud\Dalamud\bin\Debug\XIVLauncher\testPlugins\HousingPos\1.0.0.0\ /K /D /H /Y</PostBuildEvent>
-  </PropertyGroup>
 </Project>

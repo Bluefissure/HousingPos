@@ -379,9 +379,9 @@ namespace HousingPos.Gui
                     Win32Clipboard.CopyTextToClipboard(str);
                     Plugin.Log(String.Format(_localizer.Localize("Exported {0} items to your clipboard."), tempList.Count));
                 }
-                /*
+                
                 ImGui.SameLine();
-                if (ImGui.Button(_localizer.Localize("Upload") + "##Single_" + uniqueID))
+                if (ImGui.Button(_localizer.Localize("Cloud Export") + "##Single_" + uniqueID))
                 {
                     List<HousingItem> tempList = new List<HousingItem>();
                     tempList.Add(housingItem);
@@ -390,7 +390,6 @@ namespace HousingPos.Gui
                     Config.UploadName = "";
                     Config.Save();
                 }
-                */
                 ImGui.NextColumn();
             }
         }

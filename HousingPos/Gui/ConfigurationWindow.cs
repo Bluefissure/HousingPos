@@ -379,6 +379,18 @@ namespace HousingPos.Gui
                     Win32Clipboard.CopyTextToClipboard(str);
                     Plugin.Log(String.Format(_localizer.Localize("Exported {0} items to your clipboard."), tempList.Count));
                 }
+                /*
+                ImGui.SameLine();
+                if (ImGui.Button(_localizer.Localize("Upload") + "##Single_" + uniqueID))
+                {
+                    List<HousingItem> tempList = new List<HousingItem>();
+                    tempList.Add(housingItem);
+                    Config.UploadItems = tempList;
+                    CanUpload = true;
+                    Config.UploadName = "";
+                    Config.Save();
+                }
+                */
                 ImGui.NextColumn();
             }
         }
@@ -766,41 +778,46 @@ namespace HousingPos.Gui
                 }
                 else
                     Config.Uploader = "Anonymous";
-
+                ImGui.Text(String.Format(_localizer.Localize("Here are {0} items that will be sent."), Config.UploadItems.Count));
                 if (ImGui.Button(_localizer.Localize("Send Data")))
                 {
                     Config.Save();
-                    string str = JsonConvert.SerializeObject(Config.UploadItems);
-                    //Plugin.Log(str);
-                    string tags = "";
-                    for (int i = 0; i < Config.Tags.Count(); i++)
+                    if(Config.UploadItems.Count() == 0)
                     {
-                        if (Config.TagsSelectList[i])
-                            tags += Config.Tags[i] + ",";
+                        Plugin.LogError($"Error while Postdata: No Items Can Be Upload");
+                        CanUpload = false;
                     }
-                    if (tags.Length > 0)
+                    else
                     {
-                        tags = tags.Remove(tags.Length - 1);
+                        string str = JsonConvert.SerializeObject(Config.UploadItems);
+                        //Plugin.Log(str);
+                        string tags = "";
+                        for (int i = 0; i < Config.Tags.Count(); i++)
+                        {
+                            if (Config.TagsSelectList[i])
+                                tags += Config.Tags[i] + ",";
+                        }
+                        if (tags.Length > 0)
+                            tags = tags.Remove(tags.Length - 1);
                         //Plugin.Log(tags);
                         Task<string> posttask = HttpPost.Post(Config.DefaultCloudUri, Config.Location, Config.Size, Config.UploadName, str, tags, Config.Uploader);
+                        CanUpload = false;
                         posttask.ContinueWith((t) => {
                             try
                             {
                                 string res = posttask.Result;
                                 Plugin.Log(res);
                                 Plugin.Log(String.Format(_localizer.Localize("Exported {0} items to Cloud."), Config.UploadItems.Count));
-                                CanUpload = false;
+                                
                             }
                             catch (Exception e)
                             {
                                 Plugin.LogError($"Error while Postdata: {e.Message}");
+                                CanUpload = true;
                             }
                         });
                     }
-                    else
-                    {
-                        Plugin.LogError($"Error while Postdata: Empty tags");
-                    }
+                    
                 }
                 ImGui.SameLine();
                 if (ImGui.Button(_localizer.Localize("Cancel")))

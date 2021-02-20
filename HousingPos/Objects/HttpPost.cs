@@ -17,11 +17,11 @@ namespace HousingPos.Objects
         public string Name;
         public string Hash;
         public string Tags;
-        public CloudMap(string location, string size, string named, string hash, string tags)
+        public CloudMap(string location, string size, string uploadName, string hash, string tags)
         {
             Location = location;
             Size = size;
-            Name = named;
+            Name = uploadName;
             Hash = hash;
             Tags = tags;
         }
@@ -40,10 +40,10 @@ namespace HousingPos.Objects
             {
                 {"Location", Location},
                 {"Size", Size },
-                {"Named", UploadName },
+                {"UploadName", UploadName },
                 {"Items", str },
                 {"Tags", tags },
-                {"Uper", Uploader }
+                {"Uploader", Uploader }
             };
             HttpContent data = new FormUrlEncodedContent(values);
             HttpResponseMessage response = await httpClient.PostAsync(Uri + "/index.php", data);

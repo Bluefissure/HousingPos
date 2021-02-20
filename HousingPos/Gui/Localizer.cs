@@ -77,6 +77,7 @@ namespace HousingPos.Gui
             zh.Add("Available Tags:", "可选标签:");
             zh.Add("Add Custom Tags:", "自订标签");
             zh.Add("Use Default Cloud Service", "使用默认云服务");
+            zh.Add("Here are {0} items that will be sent.", "{0}个家具的数据将被发送。");
             zh.Add("Imported {0} items from Cloud.", "从服务器导入了{0}个家具");
             zh.Add("Uploader:", "署名:");
             zh.Add("Server Address:", "服务器地址:");

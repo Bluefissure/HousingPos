@@ -354,7 +354,7 @@ namespace HousingPos.Gui
                 }
                 Config.Save();
             }
-            if (ImGui.Button(_localizer.Localize("Export To Cloud")))
+            if (ImGui.Button(_localizer.Localize("Cloud Export")))
             {
                 Config.UploadItems = Config.HousingItemList;
                 CanUpload = true;
@@ -363,7 +363,7 @@ namespace HousingPos.Gui
                 Config.Save();
             }
             ImGui.SameLine();
-            if (ImGui.Button(_localizer.Localize("Import From Cloud")))
+            if (ImGui.Button(_localizer.Localize("Cloud Import")))
             {
                 Task<string> strTask = HttpPost.GetMap(Config.DefaultCloudUri);
                 strTask.ContinueWith((t) =>

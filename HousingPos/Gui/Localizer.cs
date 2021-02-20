@@ -98,8 +98,8 @@ namespace HousingPos.Gui
             zh.Add("Undo", "撤销");
             zh.Add("Undo the on-screen setting.", "撤销屏幕摆放。");
             zh.Add("Drawing Distance:", "绘制距离:");
-            zh.Add("Export To Cloud","导出到云");
-            zh.Add("Import From Cloud", "自云导入");
+            zh.Add("Cloud Export", "云导出");
+            zh.Add("Cloud Import", "云导入");
             zh.Add("Name Your Export","命名你的导出内容。");
             zh.Add("Tag Your Export", "为导出内容添加标签。");
             zh.Add("Exported {0} items to Cloud.", "将{0}个物品导出到了服务器。");

@@ -26,8 +26,7 @@ namespace HousingPos
         public List<string> Tags = new List<string>();
         public List<bool> TagsSelectList = new List<bool>();
         public string Uploader = "";
-        public string Location = "Lavender Beds";
-        public string Size = "S";
+        public string Location = "";
         public List<HousingItem> UploadItems = new List<HousingItem>();
         public bool Anonymous = true;
         public List<CloudMap> CloudMap = new List<CloudMap>();

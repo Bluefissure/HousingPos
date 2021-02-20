@@ -72,7 +72,6 @@ namespace HousingPos.Gui
             zh.Add("Location", "位置");
             zh.Add("Send Data", "发送数据");
             zh.Add("Upload Name:", "命名:");
-            zh.Add("Size", "型号");
             zh.Add("Selected Tags:", "已选标签:");
             zh.Add("Available Tags:", "可选标签:");
             zh.Add("Add Custom Tags:", "自订标签");

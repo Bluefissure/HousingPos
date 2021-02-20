@@ -20,10 +20,6 @@ namespace HousingPos.Gui
         public Configuration Config => Plugin.Config;
         private readonly string[] _languageList;
         private int _selectedLanguage;
-        private readonly string[] _locationList;
-        private int _selectedLocation;
-        private readonly string[] _sizeList;
-        private int _selectedSize;
         private Localizer _localizer;
         private string CustomTag = string.Empty;
         private Dictionary<uint, uint> iconToFurniture = new Dictionary<uint, uint> { };
@@ -32,8 +28,6 @@ namespace HousingPos.Gui
         {
             _localizer = new Localizer(Config.UILanguage);
             _languageList = new string[] { "en", "zh" };
-            _locationList = new string[] { _localizer.Localize("Lavender Beds"), _localizer.Localize("The Goblet"), _localizer.Localize("Mist"), _localizer.Localize("Shirogane") };
-            _sizeList = new string[] { "S","M","L"};
         }
 
         protected override void DrawUi()
@@ -68,7 +62,6 @@ namespace HousingPos.Gui
             {
                 Config.UILanguage = _languageList[_selectedLanguage];
                 _localizer.Language = Config.UILanguage;
-                Config.Location = _localizer.Localize("Lavender Beds");
                 Config.Save();
             }
             ImGui.SameLine(ImGui.GetColumnWidth() - 80);
@@ -617,10 +610,10 @@ namespace HousingPos.Gui
             string uniqueId = i.ToString();
             ImGui.Text($"{cloudMap.Name}"); ImGui.NextColumn();
             ImGui.Text(_localizer.Localize($"{cloudMap.Location}")); ImGui.NextColumn();
-            ImGui.Text($"{cloudMap.Size}"); ImGui.NextColumn();
             ImGui.Text($"{cloudMap.Tags}"); ImGui.NextColumn();
             if (ImGui.Button(_localizer.Localize("Import") + "##" + uniqueId))
             {
+                Config.Location = cloudMap.Location;
                 PluginLog.Log(cloudMap.Hash);
                 Task<string> cloudItems = HttpPost.GetItems(Config.DefaultCloudUri, cloudMap.Hash);
                 cloudItems.ContinueWith((t) => {
@@ -655,12 +648,11 @@ namespace HousingPos.Gui
         }
         private void DrawImportList()
         {
-            int columns = 5;
+            int columns = 4;
             ImGui.Columns(columns, "CloudItemsList", true);
             ImGui.Separator();
             ImGui.Text(_localizer.Localize("Name")); ImGui.NextColumn();
             ImGui.Text(_localizer.Localize("Location")); ImGui.NextColumn();
-            ImGui.Text(_localizer.Localize("Size")); ImGui.NextColumn();
             ImGui.Text(_localizer.Localize("Tags")); ImGui.NextColumn();
             ImGui.Text(_localizer.Localize("Import")); ImGui.NextColumn();
             ImGui.Separator();
@@ -690,21 +682,6 @@ namespace HousingPos.Gui
                 ImGui.SetNextItemWidth(ImGui.GetWindowWidth() - ImGui.CalcTextSize(_localizer.Localize("Server Address:")).X - (16 * ImGui.GetIO().FontGlobalScale));
                 if (ImGui.InputText("##ServerAddr", ref Config.DefaultCloudUri, 255))
                 {
-                    Config.Save();
-                }
-                ImGui.TextUnformatted(_localizer.Localize("Location"));
-                ImGui.SameLine();
-                ImGui.SetNextItemWidth(200);
-                if (ImGui.Combo("##SetLocation", ref _selectedLocation, _locationList, _locationList.Length))
-                {
-                    Config.Location = _localizer.Localize(_locationList[_selectedLocation]);
-                    Config.Save();
-                }
-                ImGui.SameLine();
-                ImGui.SetNextItemWidth(100);
-                if (ImGui.Combo("##SetSize", ref _selectedSize, _sizeList, _sizeList.Length))
-                {
-                    Config.Size = _sizeList[_selectedSize];
                     Config.Save();
                 }
                 ImGui.Checkbox(_localizer.Localize("Anonymous"), ref Config.Anonymous);
@@ -801,7 +778,7 @@ namespace HousingPos.Gui
                         if (tags.Length > 0)
                             tags = tags.Remove(tags.Length - 1);
                         //Plugin.Log(tags);
-                        Task<string> posttask = HttpPost.Post(Config.DefaultCloudUri, Config.Location, Config.Size, Config.UploadName, str, tags, Config.Uploader);
+                        Task<string> posttask = HttpPost.Post(Config.DefaultCloudUri, Config.Location, Config.UploadName, str, tags, Config.Uploader);
                         CanUpload = false;
                         posttask.ContinueWith((t) => {
                             try

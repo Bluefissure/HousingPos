@@ -10,17 +10,15 @@ namespace HousingPos.Objects
 {
     public class CloudMap
     {
-        public static CloudMap Empty => new CloudMap("", "", "", "", "");
+        public static CloudMap Empty => new CloudMap("", "", "", "");
 
         public string Location;
-        public string Size;
         public string Name;
         public string Hash;
         public string Tags;
-        public CloudMap(string location, string size, string uploadName, string hash, string tags)
+        public CloudMap(string location,  string uploadName, string hash, string tags)
         {
             Location = location;
-            Size = size;
             Name = uploadName;
             Hash = hash;
             Tags = tags;
@@ -29,7 +27,7 @@ namespace HousingPos.Objects
     
     public class HttpPost
     {
-        public static async Task<string> Post(string Uri,string Location, string Size, string UploadName, string str, string tags, string Uploader)
+        public static async Task<string> Post(string Uri,string Location, string UploadName, string str, string tags, string Uploader)
         {
             HttpClient httpClient = new HttpClient();
             if (str==null)
@@ -39,7 +37,6 @@ namespace HousingPos.Objects
             var values = new Dictionary<string, string>
             {
                 {"Location", Location},
-                {"Size", Size },
                 {"UploadName", UploadName },
                 {"Items", str },
                 {"Tags", tags },

@@ -11,6 +11,7 @@ namespace HousingPos.Gui
     {
         public string Language = "en";
         private Dictionary<string, string> zh = new Dictionary<string, string> { };
+        private Dictionary<string, string> en = new Dictionary<string, string> { };
         public Localizer(string language="en")
         {
             Language = language;
@@ -20,6 +21,7 @@ namespace HousingPos.Gui
         {
             if (message == null) return message;
             if (Language == "zh") return zh.ContainsKey(message) ? zh[message] : message;
+            if (Language == "en") return en.ContainsKey(message) ? en[message] : message;
             return message;
         }
         private void LoadZh()
@@ -68,6 +70,46 @@ namespace HousingPos.Gui
             zh.Add("Anonymous", "匿名");
             zh.Add("Clear", "清空");
             zh.Add("Close", "关闭");
+            zh.Add("Private Chambers - Mist", "海雾村个人房间");
+            zh.Add("Topmast Apartment", "中桅塔房间");
+            zh.Add("Private Cottage - Mist", "海雾村私人小屋");
+            zh.Add("Private House - Mist", "海雾村私人公馆");
+            zh.Add("Private Mansion - Mist", "海雾村私人别墅");
+            zh.Add("Private Chambers - The Goblet", "高脚孤丘个人房间");
+            zh.Add("Sultana's Breath Apartment", "娜娜莫大风车房间");
+            zh.Add("Private Cottage - The Goblet", "高脚孤丘私人小屋");
+            zh.Add("Private House - The Goblet", "高脚孤丘私人公馆");
+            zh.Add("Private Mansion - The Goblet", "高脚孤丘私人别墅");
+            zh.Add("Private Chambers - The Lavzhder Beds", "薰衣草苗圃个人房间");
+            zh.Add("Lily Hills Apartment", "百合岭房间");
+            zh.Add("Private Cottage - The Lavender Beds", "薰衣草苗圃私人小屋");
+            zh.Add("Private House - The Lavender Beds", "薰衣草苗圃私人公馆");
+            zh.Add("Private Mansion - The Lavender Beds", "薰衣草苗圃私人别墅");
+            zh.Add("Private Chambers - Shirogane", "白银乡个人房间");
+            zh.Add("Kobai Goten Apartment", "红梅御殿房间");
+            zh.Add("Private Cottage - Shirogane", "白银乡私人小屋");
+            zh.Add("Private House - Shirogane", "白银乡私人公馆");
+            zh.Add("Private Mansion - Shirogane", "白银乡私人别墅");
+            en.Add("海雾村个人房间", "Private Chambers - Mist");
+            en.Add("中桅塔房间", "Topmast Apartment");
+            en.Add("海雾村私人小屋", "Private Cottage - Mist");
+            en.Add("海雾村私人公馆", "Private House - Mist");
+            en.Add("海雾村私人别墅", "Private Mansion - Mist");
+            en.Add("高脚孤丘个人房间", "Private Chambers - The Goblet");
+            en.Add("娜娜莫大风车房间	", "Sultana's Breath Apartment");
+            en.Add("高脚孤丘私人小屋", "Private Cottage - The Goblet");
+            en.Add("高脚孤丘私人公馆", "Private House - The Goblet");
+            en.Add("高脚孤丘私人别墅", "Private Mansion - The Goblet");
+            en.Add("薰衣草苗圃个人房间", "Private Chambers - The Lavzhder Beds");
+            en.Add("百合岭房间", "Lily Hills Apartment");
+            en.Add("薰衣草苗圃私人小屋", "Private Cottage - The Lavzhder Beds");
+            en.Add("薰衣草苗圃私人公馆", "Private House - The Lavzhder Beds");
+            en.Add("薰衣草苗圃私人别墅", "Private Mansion - The Lavzhder Beds");
+            en.Add("白银乡个人房间", "Private Chambers - Shirogane");
+            en.Add("红梅御殿房间	", "Kobai Goten Apartment");
+            en.Add("白银乡私人小屋", "Private Cottage - Shirogane");
+            en.Add("白银乡私人公馆", "Private House - Shirogane");
+            en.Add("白银乡私人别墅", "Private Mansion - Shirogane");
             zh.Add("Cancel", "取消");
             zh.Add("Location", "位置");
             zh.Add("Send Data", "发送数据");

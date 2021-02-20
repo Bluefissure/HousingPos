@@ -31,7 +31,7 @@ namespace HousingPos.Gui
         public ConfigurationWindow(HousingPos plugin) : base(plugin)
         {
             _languageList = new string[] { "en", "zh" };
-            _locationList = new string[] { "薰衣草苗圃","高脚孤丘","海雾村","白银乡"};
+            _locationList = new string[] { _localizer.Localize("Lavender Beds"), _localizer.Localize("The Goblet"), _localizer.Localize("Mist"), _localizer.Localize("Shirogane") };
             _sizeList = new string[] { "S","M","L"};
             _localizer = new Localizer(Config.UILanguage);
         }
@@ -98,8 +98,8 @@ namespace HousingPos.Gui
                 ImGui.InputText("##Nameit", ref Config.Nameit, buf_size);
                 if(Config.Tags.Count()==0)
                 {
-                    Config.Tags = new List<string>() { "组合", "全屋", "和风", "现代", "古风", "卡通" };
-                    Config.TagsSelectList = new List<bool>() { false, false, false, false, false, false };
+                    Config.Tags = new List<string>() { _localizer.Localize("Combination"), _localizer.Localize("WholeHouse"), _localizer.Localize("Far Eastern-style"), _localizer.Localize("Modern-style"), _localizer.Localize("Plants"), _localizer.Localize("Loft-style"), _localizer.Localize("Cartoon - style")};
+                    Config.TagsSelectList = new List<bool>() { false, false, false, false, false, false, false};
                     Config.Save();
                 }
 
@@ -230,6 +230,7 @@ namespace HousingPos.Gui
             {
                 Config.UILanguage = _languageList[_selectedLanguage];
                 _localizer.Language = Config.UILanguage;
+                Config.Location = _localizer.Localize("Lavender Beds");
                 Config.Save();
             }
             ImGui.SameLine(ImGui.GetColumnWidth() - 80);
@@ -712,10 +713,12 @@ namespace HousingPos.Gui
         }
         private void DrawImportList()
         {
-            int columns = 3;
+            int columns = 5;
             ImGui.Columns(columns, "CloudItemsList", true);
             ImGui.Separator();
             ImGui.Text(_localizer.Localize("Name")); ImGui.NextColumn();
+            ImGui.Text(_localizer.Localize("Location")); ImGui.NextColumn();
+            ImGui.Text(_localizer.Localize("Size")); ImGui.NextColumn();
             ImGui.Text(_localizer.Localize("Tags")); ImGui.NextColumn();
             ImGui.Text(_localizer.Localize("Import")); ImGui.NextColumn();
             ImGui.Separator();

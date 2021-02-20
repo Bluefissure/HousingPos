@@ -26,7 +26,7 @@ namespace HousingPos
         public List<string> Tags = new List<string>();
         public List<bool> TagsSelectList = new List<bool>();
         public string Uper = "";
-        public string Location = "薰衣草苗圃";
+        public string Location = "Lavender Beds";
         public string Size = "S";
         public List<HousingItem> UploadItems = new List<HousingItem>();
         public bool Anonymous = true;

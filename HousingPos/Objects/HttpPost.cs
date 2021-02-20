@@ -10,13 +10,17 @@ namespace HousingPos.Objects
 {
     public class CloudMap
     {
-        public static CloudMap Empty => new CloudMap("", "", "");
+        public static CloudMap Empty => new CloudMap("", "", "", "", "");
 
+        public string Location;
+        public string Size;
         public string Name;
         public string Hash;
         public string Tags;
-        public CloudMap(string named, string hash, string tags)
+        public CloudMap(string location, string size, string named, string hash, string tags)
         {
+            Location = location;
+            Size = size;
             Name = named;
             Hash = hash;
             Tags = tags;
@@ -28,6 +32,10 @@ namespace HousingPos.Objects
         public static async Task<string> Post(string Uri,string Location, string Size, string Nameit, string str,string tags,string uper)
         {
             HttpClient httpClient = new HttpClient();
+            if (str==null)
+            {
+                return "You Can`t Upload An Empty List.";
+            }
             var values = new Dictionary<string, string>
             {
                 {"Location",Location},

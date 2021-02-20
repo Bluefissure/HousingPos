@@ -54,6 +54,17 @@ namespace HousingPos.Gui
             zh.Add("Add Export button to the single furnitures.", "对单独的家具添加导出按钮。");
             zh.Add("Group", "分组");
             zh.Add("Add", "添加");
+            zh.Add("Lavender Beds", "薰衣草苗圃");
+            zh.Add("The Goblet", "高脚孤丘");
+            zh.Add("Mist", "海雾村");
+            zh.Add("Shirogane", "白银乡");
+            zh.Add("Combination", "组合"); 
+            zh.Add("WholeHouse","全屋");
+            zh.Add("Far Eastern-style", "东方风格");
+            zh.Add("Modern-style", "现代风格");
+            zh.Add("Loft-style", "LOFT风格");
+            zh.Add("Plants", "植物");
+            zh.Add("Cartoon-style","卡通风格");
             zh.Add("Anonymous", "匿名");
             zh.Add("Clear", "清空");
             zh.Add("Close", "关闭");
@@ -61,6 +72,7 @@ namespace HousingPos.Gui
             zh.Add("Location", "位置");
             zh.Add("Send Data", "发送数据");
             zh.Add("Nameit:", "命名:");
+            zh.Add("Size", "型号");
             zh.Add("Selected Tags:", "已选标签:");
             zh.Add("Can Select Tags:", "可选标签:");
             zh.Add("Add Custom Tags:", "自订标签");

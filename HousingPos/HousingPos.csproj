@@ -107,6 +107,7 @@
     <Compile Include="Memory.cs" />
     <Compile Include="Objects\ChocoboItem.cs" />
     <Compile Include="Objects\ChocoboInput.cs" />
+    <Compile Include="Objects\CloudMap.cs" />
     <Compile Include="Objects\HousingItem.cs" />
     <Compile Include="Objects\HousingPosLanguage.cs" />
     <Compile Include="Objects\HttpPost.cs" />

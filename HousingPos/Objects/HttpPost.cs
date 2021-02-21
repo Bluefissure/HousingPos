@@ -10,30 +10,16 @@ using Dalamud.Plugin;
 
 namespace HousingPos.Objects
 {
-    
-    public class CloudMap
-    {
-        public static CloudMap Empty => new CloudMap(0, "", "", "", "");
-
-        public int LocationId;
-        public string Name;
-        public string Hash;
-        public string ObjectId;
-        public string Tags;
-        public CloudMap(int locationId,  string uploadName, string hash, string tags, string objectId)
-        {
-            LocationId = locationId;
-            Name = uploadName;
-            Hash = hash;
-            Tags = tags;
-            ObjectId = objectId;
-        }
-    }
-    
-    public class HttpPost
+    public static class HttpPost
     {
         // private static string appId = "OHAlmaVE5wP7gXT4dDpcpqsv-MdYXbMMI";
         // private static string appkey = "XkMdaB5RAXIeCOGX1NUL7FIj";
+        public static async Task<TResult> WithTimeout<TResult>(this Task<TResult> task, TimeSpan timeout)
+        {
+            if (task == await Task.WhenAny(task, Task.Delay(timeout)))
+                return await task;
+            throw new TimeoutException();
+        }
         public static string GetMD5(string SourceData, string salt)
         {
             byte[] tmpData;
@@ -65,7 +51,7 @@ namespace HousingPos.Objects
             HttpContent data = new FormUrlEncodedContent(values);
             HttpResponseMessage response = await httpClient.PostAsync(Uri + "/index.php", data);
             response.EnsureSuccessStatusCode();
-            string resultStr = await response.Content.ReadAsStringAsync();
+            string resultStr = await response.Content.ReadAsStringAsync().WithTimeout(TimeSpan.FromSeconds(10));
             return resultStr;
         }
         /*
@@ -138,7 +124,7 @@ namespace HousingPos.Objects
             HttpClient httpClient = new HttpClient();
             HttpResponseMessage response = await httpClient.GetAsync(Uri + "/map.json");
             response.EnsureSuccessStatusCode();
-            string resultStr = await response.Content.ReadAsStringAsync();
+            string resultStr = await response.Content.ReadAsStringAsync().WithTimeout(TimeSpan.FromSeconds(10));
             return resultStr;
         }
         /*
@@ -158,7 +144,7 @@ namespace HousingPos.Objects
             HttpClient httpClient = new HttpClient();
             HttpResponseMessage response = await httpClient.GetAsync(Uri + "/result/" + hash + ".json");
             response.EnsureSuccessStatusCode();
-            string resultStr = await response.Content.ReadAsStringAsync();
+            string resultStr = await response.Content.ReadAsStringAsync().WithTimeout(TimeSpan.FromSeconds(10));
             return resultStr;
         }
         /*

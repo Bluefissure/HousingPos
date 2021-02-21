@@ -98,13 +98,14 @@ namespace HousingPos.Gui
             zh.Add("Draw on screen", "屏幕绘制");
             zh.Add("Draw items on screen.", "在屏幕上绘制家具。");
             zh.Add("Undo", "撤销");
+            zh.Add("Unknown", "未知");
             zh.Add("Undo the on-screen setting.", "撤销屏幕摆放。");
             zh.Add("Drawing Distance:", "绘制距离:");
-            zh.Add("Cloud Export", "云导出");
-            zh.Add("Cloud Import", "云导入");
+            zh.Add("Cloud Upload", "云上传");
+            zh.Add("Cloud Download", "云下载");
             zh.Add("Name Your Export","命名你的导出内容。");
             zh.Add("Tag Your Export", "为导出内容添加标签。");
-            zh.Add("Exported {0} items to Cloud.", "将{0}个物品导出到了服务器。");
+            zh.Add("Uploading {0} items to Cloud.", "正在将{0}个物品上传到服务器。");
             zh.Add("Only draw items within this distance to your character. (0 for unlimited)", "只绘制距离以内的家具。（0为无限）");
             zh.Add("Send Data To Leancloud", "发送到LeanCloud");
             zh.Add("LeanCloud Import","LeanCloud导入");

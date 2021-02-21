@@ -173,18 +173,18 @@ namespace HousingPos
             }
         }
 
-        public void Log(string message)
+        public void Log(string message, string detail_message = "")
         {
             //if (!Config.PrintMessage) return;
             var msg = $"[{Name}] {message}";
-            PluginLog.Log(msg);
+            PluginLog.Log(detail_message == "" ? msg : detail_message);
             Interface.Framework.Gui.Chat.Print(msg);
         }
-        public void LogError(string message)
+        public void LogError(string message, string detail_message = "")
         {
             //if (!Config.PrintError) return;
             var msg = $"[{Name}] {message}";
-            PluginLog.LogError(msg);
+            PluginLog.LogError(detail_message == "" ? msg : detail_message);
             Interface.Framework.Gui.Chat.PrintError(msg);
         }
         /*

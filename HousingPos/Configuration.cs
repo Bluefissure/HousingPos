@@ -31,6 +31,9 @@ namespace HousingPos
         public bool Anonymous = true;
         public List<CloudMap> CloudMap = new List<CloudMap>();
         public string DefaultCloudUri = "https://api.4c43.work/ffxiv";
+        public string API_BASE_URL = "https://OHAlmaVE.api.lncldglobal.com/1.1";
+        public string CLASS_NAME = "/classes/housing";
+        public string SessionToken = "";
         // public bool DefaultCloudService = true;
 
         // public bool ForceMove = false;

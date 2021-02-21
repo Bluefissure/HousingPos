@@ -146,6 +146,9 @@ namespace HousingPos.Gui
             zh.Add("Tag Your Export", "为导出内容添加标签。");
             zh.Add("Exported {0} items to Cloud.", "将{0}个物品导出到了服务器。");
             zh.Add("Only draw items within this distance to your character. (0 for unlimited)", "只绘制距离以内的家具。（0为无限）");
+            zh.Add("Send Data To Leancloud", "发送到LeanCloud");
+            zh.Add("LeanCloud Import","LeanCloud导入");
+            zh.Add("Imported {0} items from LeanCloud.", "从LeanCloud导入了{0}个物品");
         }
     }
 }

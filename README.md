@@ -38,12 +38,12 @@ Draw on screen：Draw items on screen.
 
 ### Export and Import with Cloud
 
-Cloud Export / Cloud Import：
-- Just like The Whole House's Import / Export,You can change the Server Address in the interface that appears after clicking `Cloud Export`.If you want, you can set up [the Back End](https://github.com/lclichen/BackendForHousingPos) yourself.
+Cloud Upload / Cloud Download：
+- Just like The Whole House's Import / Export,You can change the Server Address in the interface that appears after clicking `Cloud Upload`.If you want, you can set up [the Back End](https://github.com/lclichen/BackendForHousingPos) yourself.
 
 - [IMEPlugin](https://github.com/Bluefissure/IMEPlugin) is recommended for Chinese input.
 
-- Optional input contents: Location (Which may be useful for the selection of house style), size (Can be used to distinguish the house size), Tags (You can `Add Custom Tags`), Uper (`Anonymous` optional).
+- Optional input contents: Tags (You can `Add Custom Tags`), Uploader (`Anonymous` optional).
 
 ## FAQs
 

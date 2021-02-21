@@ -26,11 +26,12 @@ namespace HousingPos
         public List<string> Tags = new List<string>();
         public List<bool> TagsSelectList = new List<bool>();
         public string Uploader = "";
-        public string Location = "";
+        public int LocationId = 0;
         public List<HousingItem> UploadItems = new List<HousingItem>();
         public bool Anonymous = true;
         public List<CloudMap> CloudMap = new List<CloudMap>();
         public string DefaultCloudUri = "https://api.4c43.work/ffxiv";
+        public string Md5Salt = "CSKM153q";
         // public string API_BASE_URL = "https://OHAlmaVE.api.lncldglobal.com/1.1";
         // public string CLASS_NAME = "/classes/housing";
         // public string SessionToken = "";

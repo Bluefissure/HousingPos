@@ -13,16 +13,16 @@ namespace HousingPos.Objects
     
     public class CloudMap
     {
-        public static CloudMap Empty => new CloudMap("", "", "", "", "");
+        public static CloudMap Empty => new CloudMap(0, "", "", "", "");
 
-        public string Location;
+        public int LocationId;
         public string Name;
         public string Hash;
         public string ObjectId;
         public string Tags;
-        public CloudMap(string location,  string uploadName, string hash, string tags, string objectId)
+        public CloudMap(int locationId,  string uploadName, string hash, string tags, string objectId)
         {
-            Location = location;
+            LocationId = locationId;
             Name = uploadName;
             Hash = hash;
             Tags = tags;
@@ -34,11 +34,11 @@ namespace HousingPos.Objects
     {
         // private static string appId = "OHAlmaVE5wP7gXT4dDpcpqsv-MdYXbMMI";
         // private static string appkey = "XkMdaB5RAXIeCOGX1NUL7FIj";
-        public static string GetMD5(string SourceData)
+        public static string GetMD5(string SourceData, string salt)
         {
             byte[] tmpData;
             byte[] tmpHash;
-            tmpData = ASCIIEncoding.ASCII.GetBytes(SourceData);
+            tmpData = ASCIIEncoding.ASCII.GetBytes(SourceData + salt);
             tmpHash = new MD5CryptoServiceProvider().ComputeHash(tmpData);
             StringBuilder sOutput = new StringBuilder(tmpHash.Length);
             for (int i = 0; i < tmpHash.Length; i++)
@@ -47,15 +47,15 @@ namespace HousingPos.Objects
             }
             return sOutput.ToString();
         }
-        public static async Task<string> Post(string Uri,string Location, string UploadName, string str, string tags, string Uploader,string UserId)
+        public static async Task<string> Post(string Uri, int LocationId, string UploadName, string str, string tags, string Uploader, string UserId, string Md5Salt)
         {
             if (str == null || str == "" || str == "[]")
                 return "You Can't Upload An Empty List.";
             HttpClient httpClient = new HttpClient();
-            var UserHash = GetMD5(UserId);
+            var UserHash = GetMD5(UserId, Md5Salt);
             var values = new Dictionary<string, string>
             {
-                {"Location", Location},
+                {"LocationId", LocationId.ToString()},
                 {"UploadName", UploadName },
                 {"Items", str },
                 {"Tags", tags },

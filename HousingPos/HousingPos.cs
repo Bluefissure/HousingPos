@@ -33,7 +33,6 @@ namespace HousingPos
         public SigScanner Scanner { get; private set; }
 
         private Localizer _localizer;
-        private List<TerritoryType> _territoryTypes;
 
         public List<HousingItem> HousingItemList = new List<HousingItem>();
 
@@ -103,18 +102,8 @@ namespace HousingPos
                     Log(String.Format(_localizer.Localize("Load {0} furnitures."), HousingItemList.Count));
                     Config.HousingItemList = HousingItemList.ToList();
                     Config.HiddenScreenItemHistory = new List<int>();
-                    var placeName = "Location";
                     var territoryTypeId = Interface.ClientState.TerritoryType;
-                    if(_territoryTypes == null)
-                    {
-                        _territoryTypes = Interface.Data.GetExcelSheet<TerritoryType>().ToList();
-                    }
-                    if(territoryTypeId != 0)
-                    {
-                        var territoryType = _territoryTypes.First(x => x.RowId == territoryTypeId);
-                        placeName = territoryType.PlaceName.Value?.Name ?? "Unknown";
-                    }
-                    Config.Location = placeName;
+                    Config.LocationId = territoryTypeId;
                     Config.Save();
                 }
                 else

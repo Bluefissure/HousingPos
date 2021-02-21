@@ -12,6 +12,8 @@ using Newtonsoft.Json.Linq;
 using System.Numerics;
 using System.Reflection;
 using Lumina.Excel.GeneratedSheets;
+using Dalamud.Interface;
+using System.Diagnostics;
 
 namespace HousingPos.Gui
 {
@@ -249,14 +251,23 @@ namespace HousingPos.Gui
                     string str = _localizer.Localize("Only for purchasing, please use Export/Import for the whole preset.\n");
                     var itemList = new List<string>();
                     foreach (var housingItem in Config.HousingItemList)
+                    {
                         itemList.Add($"item#{housingItem.ItemKey}\t{housingItem.Name}");
+                        if (housingItem.children.Count > 0)
+                        {
+                            foreach(var childItem in housingItem.children)
+                            {
+                                itemList.Add($"item#{childItem.ItemKey}\t{childItem.Name}");
+                            }
+                        }
+                    }
                     var itemSet = new HashSet<string>(itemList);
                     foreach (string itemName in itemSet)
                     {
                         str += $"{itemName}\t{itemList.Count(x => x == itemName)}\n";
                     }
                     Win32Clipboard.CopyTextToClipboard(str);
-                    Plugin.Log(String.Format(_localizer.Localize("Copied {0} items to your clipboard."), Config.HousingItemList.Count));
+                    Plugin.Log(String.Format(_localizer.Localize("Copied {0} items to your clipboard."), itemSet.Count));
                 }
                 catch (Exception e)
                 {
@@ -631,11 +642,12 @@ namespace HousingPos.Gui
         {
             string uniqueId = i.ToString();
             ImGui.Text($"{cloudMap.Name}"); ImGui.NextColumn();
-            ImGui.Text(_localizer.Localize($"{cloudMap.Location}")); ImGui.NextColumn();
+            var territoryName = Plugin.Interface.Data.GetExcelSheet<TerritoryType>().GetRow((uint)cloudMap.LocationId)?.Name;
+            ImGui.Text(territoryName); ImGui.NextColumn();
             ImGui.Text($"{cloudMap.Tags}"); ImGui.NextColumn();
             if (ImGui.Button(_localizer.Localize("Import") + "##" + uniqueId))
             {
-                Config.Location = cloudMap.Location;
+                Config.LocationId = cloudMap.LocationId;
                 PluginLog.Log(cloudMap.Hash);
                 if (cloudMap.Hash != "")
                 {
@@ -735,9 +747,20 @@ namespace HousingPos.Gui
             if (ImGui.BeginChild("##SettingUpload"))
             {
                 ImGui.TextUnformatted(_localizer.Localize("Server Address:"));
+                if (Config.ShowTooltips && ImGui.IsItemHovered())
+                    ImGui.SetTooltip(_localizer.Localize("Open server which stores all uploaded data."));
                 ImGui.SameLine();
                 ImGui.SetNextItemWidth(ImGui.GetWindowWidth() - ImGui.CalcTextSize(_localizer.Localize("Server Address:")).X - (16 * ImGui.GetIO().FontGlobalScale));
                 if (ImGui.InputText("##ServerAddr", ref Config.DefaultCloudUri, 255))
+                {
+                    Config.Save();
+                }
+                ImGui.TextUnformatted(_localizer.Localize("Md5 Salt:"));
+                if (Config.ShowTooltips && ImGui.IsItemHovered())
+                    ImGui.SetTooltip(_localizer.Localize("Salt used to encrypt your user id."));
+                ImGui.SameLine();
+                ImGui.SetNextItemWidth(ImGui.GetWindowWidth() - ImGui.CalcTextSize(_localizer.Localize("Md5 Salt:")).X - (16 * ImGui.GetIO().FontGlobalScale));
+                if (ImGui.InputText("##Md5Salt", ref Config.Md5Salt, 255))
                 {
                     Config.Save();
                 }
@@ -847,7 +870,7 @@ namespace HousingPos.Gui
                         //Plugin.Log(tags);
                         var cid = Plugin.Interface.ClientState.LocalContentId.ToString();
                         
-                        Task<string> posttask = HttpPost.Post(Config.DefaultCloudUri, Config.Location, Config.UploadName, str, tags, Config.Uploader,cid);
+                        Task<string> posttask = HttpPost.Post(Config.DefaultCloudUri, Config.LocationId, Config.UploadName, str, tags, Config.Uploader, cid, Config.Md5Salt);
                         CanUpload = false;
                         posttask.ContinueWith((t) => {
                             try

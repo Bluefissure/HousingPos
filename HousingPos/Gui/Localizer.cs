@@ -11,6 +11,7 @@ namespace HousingPos.Gui
     {
         public string Language = "en";
         private Dictionary<string, string> zh = new Dictionary<string, string> { };
+        private Dictionary<string, string> en = new Dictionary<string, string> { };
         public Localizer(string language="en")
         {
             Language = language;
@@ -20,6 +21,7 @@ namespace HousingPos.Gui
         {
             if (message == null) return message;
             if (Language == "zh") return zh.ContainsKey(message) ? zh[message] : message;
+            if (Language == "en") return en.ContainsKey(message) ? en[message] : message;
             return message;
         }
         private void LoadZh()
@@ -68,15 +70,55 @@ namespace HousingPos.Gui
             zh.Add("Anonymous", "匿名");
             zh.Add("Clear", "清空");
             zh.Add("Close", "关闭");
+            zh.Add("Private Chambers - Mist", "海雾村个人房间");
+            zh.Add("Topmast Apartment", "中桅塔房间");
+            zh.Add("Private Cottage - Mist", "海雾村私人小屋");
+            zh.Add("Private House - Mist", "海雾村私人公馆");
+            zh.Add("Private Mansion - Mist", "海雾村私人别墅");
+            zh.Add("Private Chambers - The Goblet", "高脚孤丘个人房间");
+            zh.Add("Sultana's Breath Apartment", "娜娜莫大风车房间");
+            zh.Add("Private Cottage - The Goblet", "高脚孤丘私人小屋");
+            zh.Add("Private House - The Goblet", "高脚孤丘私人公馆");
+            zh.Add("Private Mansion - The Goblet", "高脚孤丘私人别墅");
+            zh.Add("Private Chambers - The Lavzhder Beds", "薰衣草苗圃个人房间");
+            zh.Add("Lily Hills Apartment", "百合岭房间");
+            zh.Add("Private Cottage - The Lavender Beds", "薰衣草苗圃私人小屋");
+            zh.Add("Private House - The Lavender Beds", "薰衣草苗圃私人公馆");
+            zh.Add("Private Mansion - The Lavender Beds", "薰衣草苗圃私人别墅");
+            zh.Add("Private Chambers - Shirogane", "白银乡个人房间");
+            zh.Add("Kobai Goten Apartment", "红梅御殿房间");
+            zh.Add("Private Cottage - Shirogane", "白银乡私人小屋");
+            zh.Add("Private House - Shirogane", "白银乡私人公馆");
+            zh.Add("Private Mansion - Shirogane", "白银乡私人别墅");
+            en.Add("海雾村个人房间", "Private Chambers - Mist");
+            en.Add("中桅塔房间", "Topmast Apartment");
+            en.Add("海雾村私人小屋", "Private Cottage - Mist");
+            en.Add("海雾村私人公馆", "Private House - Mist");
+            en.Add("海雾村私人别墅", "Private Mansion - Mist");
+            en.Add("高脚孤丘个人房间", "Private Chambers - The Goblet");
+            en.Add("娜娜莫大风车房间	", "Sultana's Breath Apartment");
+            en.Add("高脚孤丘私人小屋", "Private Cottage - The Goblet");
+            en.Add("高脚孤丘私人公馆", "Private House - The Goblet");
+            en.Add("高脚孤丘私人别墅", "Private Mansion - The Goblet");
+            en.Add("薰衣草苗圃个人房间", "Private Chambers - The Lavzhder Beds");
+            en.Add("百合岭房间", "Lily Hills Apartment");
+            en.Add("薰衣草苗圃私人小屋", "Private Cottage - The Lavzhder Beds");
+            en.Add("薰衣草苗圃私人公馆", "Private House - The Lavzhder Beds");
+            en.Add("薰衣草苗圃私人别墅", "Private Mansion - The Lavzhder Beds");
+            en.Add("白银乡个人房间", "Private Chambers - Shirogane");
+            en.Add("红梅御殿房间	", "Kobai Goten Apartment");
+            en.Add("白银乡私人小屋", "Private Cottage - Shirogane");
+            en.Add("白银乡私人公馆", "Private House - Shirogane");
+            en.Add("白银乡私人别墅", "Private Mansion - Shirogane");
             zh.Add("Cancel", "取消");
             zh.Add("Location", "位置");
             zh.Add("Send Data", "发送数据");
             zh.Add("Upload Name:", "命名:");
-            zh.Add("Size", "型号");
             zh.Add("Selected Tags:", "已选标签:");
             zh.Add("Available Tags:", "可选标签:");
             zh.Add("Add Custom Tags:", "自订标签");
             zh.Add("Use Default Cloud Service", "使用默认云服务");
+            zh.Add("Here are {0} items that will be sent.", "{0}个家具的数据将被发送。");
             zh.Add("Imported {0} items from Cloud.", "从服务器导入了{0}个家具");
             zh.Add("Uploader:", "署名:");
             zh.Add("Server Address:", "服务器地址:");
@@ -104,6 +146,9 @@ namespace HousingPos.Gui
             zh.Add("Tag Your Export", "为导出内容添加标签。");
             zh.Add("Exported {0} items to Cloud.", "将{0}个物品导出到了服务器。");
             zh.Add("Only draw items within this distance to your character. (0 for unlimited)", "只绘制距离以内的家具。（0为无限）");
+            zh.Add("Send Data To Leancloud", "发送到LeanCloud");
+            zh.Add("LeanCloud Import","LeanCloud导入");
+            zh.Add("Imported {0} items from LeanCloud.", "从LeanCloud导入了{0}个物品");
         }
     }
 }

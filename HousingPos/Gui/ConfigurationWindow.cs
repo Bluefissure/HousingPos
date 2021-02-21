@@ -196,6 +196,7 @@ namespace HousingPos.Gui
                     }
                 });
             }
+            /*
             ImGui.SameLine();
             if (ImGui.Button(_localizer.Localize("LeanCloud Import")))
             {
@@ -214,6 +215,7 @@ namespace HousingPos.Gui
                     }
                 });
             }
+            */
 
             if (ImGui.Button(_localizer.Localize("Clear")))
             {
@@ -665,6 +667,7 @@ namespace HousingPos.Gui
                         }
                     });
                 }
+                /*
                 if (cloudMap.ObjectId != "")
                 {
                     Task<string> cloudItems = HttpPost.GetItemsWithLeanCloud(Config.API_BASE_URL + Config.CLASS_NAME, cloudMap.ObjectId);
@@ -695,6 +698,7 @@ namespace HousingPos.Gui
                         }
                     });
                 }
+                */
 
             }
             ImGui.NextColumn();
@@ -737,6 +741,7 @@ namespace HousingPos.Gui
                 {
                     Config.Save();
                 }
+                /*
                 ImGui.TextUnformatted(_localizer.Localize("Serverless Api:"));
                 ImGui.SameLine();
                 ImGui.SetNextItemWidth(ImGui.GetWindowWidth() - ImGui.CalcTextSize(_localizer.Localize("Serverless Api:")).X - (16 * ImGui.GetIO().FontGlobalScale));
@@ -744,6 +749,7 @@ namespace HousingPos.Gui
                 {
                     Config.Save();
                 }
+                */
                 ImGui.Checkbox(_localizer.Localize("Anonymous"), ref Config.Anonymous);
 
                 ImGui.Text(_localizer.Localize("Upload Name:"));
@@ -860,6 +866,7 @@ namespace HousingPos.Gui
                     }
                     
                 }
+                /*
                 ImGui.SameLine();
                 if (ImGui.Button(_localizer.Localize("Send Data To Leancloud")))
                 {
@@ -906,6 +913,7 @@ namespace HousingPos.Gui
                         });
                     }
                 }
+                */
                 ImGui.SameLine();
                 if (ImGui.Button(_localizer.Localize("Cancel")))
                 {

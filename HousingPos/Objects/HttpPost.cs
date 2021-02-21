@@ -32,8 +32,8 @@ namespace HousingPos.Objects
     
     public class HttpPost
     {
-        private static string appId = "OHAlmaVE5wP7gXT4dDpcpqsv-MdYXbMMI";
-        private static string appkey = "XkMdaB5RAXIeCOGX1NUL7FIj";
+        // private static string appId = "OHAlmaVE5wP7gXT4dDpcpqsv-MdYXbMMI";
+        // private static string appkey = "XkMdaB5RAXIeCOGX1NUL7FIj";
         public static string GetMD5(string SourceData)
         {
             byte[] tmpData;
@@ -49,12 +49,9 @@ namespace HousingPos.Objects
         }
         public static async Task<string> Post(string Uri,string Location, string UploadName, string str, string tags, string Uploader,string UserId)
         {
-            
-            HttpClient httpClient = new HttpClient();
-            if (str==null)
-            {
+            if (str == null || str == "" || str == "[]")
                 return "You Can't Upload An Empty List.";
-            }
+            HttpClient httpClient = new HttpClient();
             var UserHash = GetMD5(UserId);
             var values = new Dictionary<string, string>
             {
@@ -71,6 +68,7 @@ namespace HousingPos.Objects
             string resultStr = await response.Content.ReadAsStringAsync();
             return resultStr;
         }
+        /*
         public static async Task<string> Login(string Uri, string UserName)
         {
             HttpClient httpClient = new HttpClient();
@@ -134,6 +132,7 @@ namespace HousingPos.Objects
             string resultStr = await response.Content.ReadAsStringAsync();
             return resultStr;
         }
+        */
         public static async Task<string> GetMap(string Uri)
         {
             HttpClient httpClient = new HttpClient();
@@ -142,6 +141,7 @@ namespace HousingPos.Objects
             string resultStr = await response.Content.ReadAsStringAsync();
             return resultStr;
         }
+        /*
         public static async Task<string> GetMapWithLeanCloud(string Uri)
         {
             HttpClient httpClient = new HttpClient();
@@ -152,6 +152,7 @@ namespace HousingPos.Objects
             string resultStr = await response.Content.ReadAsStringAsync();
             return resultStr;
         }
+        */
         public static async Task<string> GetItems(string Uri, string hash)
         {
             HttpClient httpClient = new HttpClient();
@@ -160,6 +161,7 @@ namespace HousingPos.Objects
             string resultStr = await response.Content.ReadAsStringAsync();
             return resultStr;
         }
+        /*
         public static async Task<string> GetItemsWithLeanCloud(string Uri, string hash)
         {
             HttpClient httpClient = new HttpClient();
@@ -181,5 +183,6 @@ namespace HousingPos.Objects
             string resultStr = await response.Content.ReadAsStringAsync();
             return resultStr;
         }
+        */
     }
 }

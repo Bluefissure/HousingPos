@@ -883,31 +883,27 @@ namespace HousingPos.Gui
                             tags = tags.Remove(tags.Length - 1);
                         //Plugin.Log(tags);
                         var cid = Plugin.Interface.ClientState.LocalContentId.ToString();
-                        if (Config.SessionToken == "")
-                        {
-                            CanUpload = false;
-                            Task<string> sessionToken = HttpPost.Login(Config.API_BASE_URL,cid);
-                            sessionToken.ContinueWith((t) => {
-                                JObject res = JObject.Parse(t.Result);
-                                Plugin.Log(res["sessionToken"].ToString());
-                                Config.SessionToken = res["sessionToken"].ToString();
-                                Config.Save();
-                                Task<string> posttask = HttpPost.PostWithLeanCloud(Config.API_BASE_URL, Config.CLASS_NAME, Config.Location, Config.UploadName, str, tags, Config.Uploader, Config.SessionToken);
+                        CanUpload = false;
+                        Task<string> sessionToken = HttpPost.Login(Config.API_BASE_URL,cid);
+                        sessionToken.ContinueWith((t) => {
+                            JObject res = JObject.Parse(t.Result);
+                            Config.SessionToken = res["sessionToken"].ToString();
+                            Config.Save();
+                            Task<string> posttask = HttpPost.PostWithLeanCloud(Config.API_BASE_URL, Config.CLASS_NAME, Config.Location, Config.UploadName, str, tags, Config.Uploader, Config.SessionToken);
                                 posttask.ContinueWith((tt) => {
-                                    try
-                                    {
-                                        string res2 = tt.Result;
-                                        Plugin.Log(String.Format(_localizer.Localize("Exported {0} items to Cloud."), Config.UploadItems.Count));
+                                try
+                                {
+                                    string res2 = tt.Result;
+                                    Plugin.Log(String.Format(_localizer.Localize("Exported {0} items to Cloud."), Config.UploadItems.Count));
 
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        Plugin.LogError($"Error while Postdata: {e.Message}");
-                                        CanUpload = true;
-                                    }
-                                });
+                                }
+                                catch (Exception e)
+                                {
+                                    Plugin.LogError($"Error while Postdata: {e.Message}");
+                                    CanUpload = true;
+                                }
                             });
-                        }
+                        });
                     }
                 }
                 ImGui.SameLine();

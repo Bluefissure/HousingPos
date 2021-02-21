@@ -1,5 +1,5 @@
 # HousingPos
-![CN doc](https://img.shields.io/badge/doc-%E4%B8%AD%E6%96%87-brightgreen)
+[![CN doc](https://img.shields.io/badge/doc-%E4%B8%AD%E6%96%87-brightgreen)](https://github.com/Bluefissure/HousingPos/blob/master/README_CN.md)
 
 HousingPos is a Dalamud plugin that reads and saves FF14 housing furniture position presets. It can save the current housing furniture placement presets and apply them later.
 

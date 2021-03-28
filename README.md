@@ -1,6 +1,5 @@
 # HousingPos
-[🇨🇳中文说明](README_CN.md)
-![GitHub all releases](https://img.shields.io/github/downloads/Bluefissure/HousingPos/total)
+[![CN doc](https://img.shields.io/badge/doc-%E4%B8%AD%E6%96%87-brightgreen)](https://github.com/Bluefissure/HousingPos/blob/master/README_CN.md)
 
 HousingPos is a Dalamud plugin that reads and saves FF14 housing furniture position presets. It can save the current housing furniture placement presets and apply them later.
 
@@ -39,12 +38,12 @@ Draw on screen：Draw items on screen.
 
 ### Export and Import with Cloud
 
-Cloud Export / Cloud Import：
-- Just like The Whole House's Import / Export,You can change the Server Address in the interface that appears after clicking `Cloud Export`.If you want, you can set up [the Back End](https://github.com/lclichen/BackendForHousingPos) yourself.
+Cloud Upload / Cloud Download：
+- Just like The Whole House's Import / Export,You can change the Server Address in the interface that appears after clicking `Cloud Upload`.If you want, you can set up [the Back End](https://github.com/lclichen/BackendForHousingPos) yourself.
 
 - [IMEPlugin](https://github.com/Bluefissure/IMEPlugin) is recommended for Chinese input.
 
-- Optional input contents: Location (Which may be useful for the selection of house style), size (Can be used to distinguish the house size), Tags (You can `Add Custom Tags`), Uper (`Anonymous` optional).
+- Optional input contents: Tags (You can `Add Custom Tags`), Uploader (`Anonymous` optional).
 
 ## FAQs
 

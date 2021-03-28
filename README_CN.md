@@ -1,6 +1,5 @@
 # HousingPos
-[🇺🇸English Document](README.md)
-![GitHub all releases](https://img.shields.io/github/downloads/Bluefissure/HousingPos/total)
+[![EN doc](https://img.shields.io/badge/doc-EN-brightgreen)](https://github.com/Bluefissure/HousingPos/blob/master/README.md)
 
 HousingPos 是一个可读取并保存FF14房屋家具位置预设的Dalamud插件。 
 它可以保存当前的房屋家具放置预设并在之后应用他们。

@@ -56,8 +56,26 @@ namespace HousingPos
             Interface?.Dispose();
         }
 
+        private void ForceCulture(string name)
+        {
+            try
+            {
+                CultureInfo.DefaultThreadCurrentCulture = CultureInfo.CreateSpecificCulture(name);
+                CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.CreateSpecificCulture(name);
+            }
+            catch (CultureNotFoundException)
+            {
+                return;
+            }
+            catch (ArgumentException)
+            {
+                return;
+            }
+        }
+
         public void Initialize(DalamudPluginInterface pluginInterface)
         {
+            ForceCulture("en-US");
             Interface = pluginInterface;
             CommandManager = pluginInterface.CommandManager;
             Scanner = Interface.TargetModuleScanner;

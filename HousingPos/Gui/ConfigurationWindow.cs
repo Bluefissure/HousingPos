@@ -686,6 +686,7 @@ namespace HousingPos.Gui
                                     Plugin.LogError($"Error while translating item#{item.ItemKey}: {e.Message}", e.ToString());
                                 }
                             }
+                            Config.HousingItemList = Config.HousingItemList.Where(e => e.Name != "").ToList();
                             Config.ResetRecord();
                             Plugin.Log(String.Format(_localizer.Localize("Imported {0} items from Cloud."), Config.HousingItemList.Count));
                         }

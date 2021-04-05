@@ -74,6 +74,23 @@ namespace HousingPos.Gui
             ImGui.SameLine();
             if (ImGui.Checkbox("##hideTooltipsOnOff", ref Config.ShowTooltips)) Config.Save();
 
+            bool preview = Config.Previewing;
+            if (ImGui.Checkbox(_localizer.Localize("Preview"), ref preview))
+            {
+                var currentTerritory = Plugin.Interface.ClientState.TerritoryType;
+                if (preview) Config.Previewing = preview;
+                if (!preview)
+                {
+                    if (currentTerritory != Plugin.PreviewTerritory)
+                        Config.Previewing = preview;
+                    else
+                        Plugin.Log(_localizer.Localize("Exit your house to disable preview."));
+                }
+                Config.Save();
+            }
+            if (Config.ShowTooltips && ImGui.IsItemHovered())
+                ImGui.SetTooltip(_localizer.Localize("Preview the current decoration plan when entering house."));
+
             if (ImGui.Checkbox(_localizer.Localize("BDTH"), ref Config.BDTH)) Config.Save();
             if (Config.ShowTooltips && ImGui.IsItemHovered())
                 ImGui.SetTooltip(_localizer.Localize("BDTH integrate: leave the position set to BDTH."));
@@ -618,7 +635,7 @@ namespace HousingPos.Gui
                         if (float.IsNaN(rotation))
                             rotation = 0;
                         Config.HousingItemList.Add(new HousingItem(
-                            furniture.ModelKey, item.RowId, x, y, z, rotation, item.Name));
+                            furniture.ModelKey, item.RowId, 0, x, y, z, rotation, item.Name));
                         successed++;
                     }
                     Config.ResetRecord();

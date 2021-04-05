@@ -113,6 +113,12 @@ namespace HousingPos.Gui
             zh.Add("Salt used to encrypt your user id.", "用于加密用户ID的MD5盐值。");
             zh.Add("Md5 Salt:", "MD5盐值：");
             zh.Add("Open server which stores all uploaded data.", "存储上传数据的公开服务器。");
+            zh.Add("Preview", "预览");
+            zh.Add("Exit your house to disable preview.", "离开房屋才能取消预览。");
+            zh.Add("Preview the current decoration plan when entering house.", "在进入房屋时预览当前装修方案。");
+            zh.Add("Decorate in preview mode is dangerous!", "预览模式下装修可能会造成危险！");
+            zh.Add("Please exit the house and disable preview!", "请退出房屋并关闭预览选项！");
+            zh.Add("Previewing {0} furnitures.", "预览了{0}个家具。");
         }
     }
 }

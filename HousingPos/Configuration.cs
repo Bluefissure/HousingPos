@@ -13,6 +13,7 @@ namespace HousingPos
 
         public HousingPosLanguage HousingPosLanguage = HousingPosLanguage.Client;
         public bool ShowTooltips = true;
+        public bool Previewing = false;
         public bool DrawScreen = false;
         public float DrawDistance = 0;
         public List<int> HiddenScreenItemHistory = new List<int>();

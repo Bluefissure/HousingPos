@@ -36,7 +36,7 @@ namespace HousingPos.Gui
         protected override void DrawUi()
         {
             ImGui.SetNextWindowSize(new Vector2(530, 450), ImGuiCond.FirstUseEver);
-            if (!ImGui.Begin($"{Plugin.Name} v{Assembly.GetExecutingAssembly().GetName().Version}", ref WindowVisible, ImGuiWindowFlags.NoScrollWithMouse))
+            if (!ImGui.Begin($"{Plugin.Name}", ref WindowVisible, ImGuiWindowFlags.NoScrollWithMouse))
             {
                 ImGui.End();
                 return;
@@ -380,6 +380,8 @@ namespace HousingPos.Gui
             ImGui.Text($"{housingItem.Y:N3}"); ImGui.NextColumn();
             ImGui.Text($"{housingItem.Z:N3}"); ImGui.NextColumn();
             ImGui.Text($"{housingItem.Rotate:N3}"); ImGui.NextColumn();
+            var colorName = Plugin.Interface.Data.GetExcelSheet<Stain>().GetRow(housingItem.Stain)?.Name;
+            ImGui.Text($"{colorName}"); ImGui.NextColumn();
             string uniqueID = childIndex == -1 ? i.ToString() : i.ToString() + "_" + childIndex.ToString();
             if (Config.BDTH)
             {
@@ -440,8 +442,8 @@ namespace HousingPos.Gui
         }
         private void DrawItemList()
         {
-            // name, x, t, z, r, set
-            int columns = 5;
+            // name, x, t, z, r, color, set
+            int columns = 6;
             if (Config.BDTH) columns += 1;
             if (Config.SingleExport) columns += 1;
             if (Config.Grouping) columns += 1;
@@ -452,6 +454,7 @@ namespace HousingPos.Gui
             ImGui.Text(_localizer.Localize("Y")); ImGui.NextColumn();
             ImGui.Text(_localizer.Localize("Z")); ImGui.NextColumn();
             ImGui.Text(_localizer.Localize("Rotate")); ImGui.NextColumn();
+            ImGui.Text(_localizer.Localize("Color")); ImGui.NextColumn();
             if (Config.BDTH)
             {
                 ImGui.Text(_localizer.Localize("BDTH Set")); ImGui.NextColumn();

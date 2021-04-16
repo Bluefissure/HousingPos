@@ -14,20 +14,24 @@ namespace HousingPos
 
             _plugin = plugin;
             _plugin.Interface.UiBuilder.OnBuildUi += Draw;
-            _plugin.Interface.UiBuilder.OnOpenConfigUi += (sender, args) => ConfigWindow.Visible = true;
-            _plugin.Interface.UiBuilder.OnOpenConfigUi += (sender, args) => ConfigWindow.CanUpload = false;
-            _plugin.Interface.UiBuilder.OnOpenConfigUi += (sender, args) => ConfigWindow.CanImport = false;
+            _plugin.Interface.UiBuilder.OnOpenConfigUi += OnOpenConfigUi;
         }
 
         private void Draw()
         {
             ConfigWindow.Draw();
         }
+        private void OnOpenConfigUi(object sender, EventArgs args)
+        {
+            ConfigWindow.Visible = true;
+            ConfigWindow.CanUpload = false;
+            ConfigWindow.CanImport = false;
+        }
 
         public void Dispose()
         {
             _plugin.Interface.UiBuilder.OnBuildUi -= Draw;
-            _plugin.Interface.UiBuilder.OnOpenConfigUi = null;
+            _plugin.Interface.UiBuilder.OnOpenConfigUi -= OnOpenConfigUi;
         }
     }
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Dalamud.Plugin;
-using Dalamud.Game.Chat;
+using Dalamud.Game.Text;
 using ImGuiNET;
 using HousingPos.Objects;
 using System.ComponentModel.DataAnnotations;
@@ -663,7 +663,7 @@ namespace HousingPos.Gui
             string uniqueId = i.ToString();
             ImGui.Text($"{cloudMap.Name}"); ImGui.NextColumn();
             var territoryName = Plugin.Interface.Data.GetExcelSheet<TerritoryType>().GetRow((uint)cloudMap.LocationId)?.PlaceName?.Value.Name;
-            ImGui.Text(territoryName != null? territoryName : _localizer.Localize("Unknown")); ImGui.NextColumn();
+            ImGui.Text(territoryName ?? _localizer.Localize("Unknown")); ImGui.NextColumn();
             ImGui.Text($"{cloudMap.Tags}"); ImGui.NextColumn();
             if (ImGui.Button(_localizer.Localize("Import") + "##" + uniqueId))
             {

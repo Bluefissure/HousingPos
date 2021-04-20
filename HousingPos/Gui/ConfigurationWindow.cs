@@ -14,6 +14,7 @@ using System.Reflection;
 using Lumina.Excel.GeneratedSheets;
 using Dalamud.Interface;
 using System.Diagnostics;
+using System.Globalization;
 
 namespace HousingPos.Gui
 {
@@ -369,7 +370,12 @@ namespace HousingPos.Gui
             Config.PlaceY = housingItem.Y;
             Config.PlaceZ = housingItem.Z;
             Config.PlaceRotate = housingItem.Rotate;
-            Plugin.CommandManager.ProcessCommand($"/bdth {housingItem.X} {housingItem.Y} {housingItem.Z} {housingItem.Rotate}");
+            string bdthCommand = "/bdth";
+            bdthCommand += $" {housingItem.X.ToString(CultureInfo.InvariantCulture)}";
+            bdthCommand += $" {housingItem.Y.ToString(CultureInfo.InvariantCulture)}";
+            bdthCommand += $" {housingItem.Z.ToString(CultureInfo.InvariantCulture)}";
+            bdthCommand += $" {housingItem.Rotate.ToString(CultureInfo.InvariantCulture)}";
+            Plugin.CommandManager.ProcessCommand(bdthCommand);
             if (housingItem.children.Count > 0)
                 housingItem.ReCalcChildrenPos();
             Config.Save();

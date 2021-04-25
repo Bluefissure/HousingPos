@@ -313,17 +313,7 @@ namespace HousingPos.Gui
                 try
                 {
                     Config.HousingItemList = JsonConvert.DeserializeObject<List<HousingItem>>(str);
-                    foreach (var item in Config.HousingItemList)
-                    {
-                        try
-                        {
-                            item.Name = Plugin.Interface.Data.GetExcelSheet<Item>().GetRow(item.ItemKey).Name;
-                        }
-                        catch (Exception e)
-                        {
-                            Plugin.LogError($"Error while translating item#{item.ItemKey}: {e.Message}");
-                        }
-                    }
+                    Plugin.TranslateFurnitureList(ref Config.HousingItemList);
                     Config.ResetRecord();
                     Plugin.Log(String.Format(_localizer.Localize("Imported {0} items from your clipboard."), Config.HousingItemList.Count));
                 }
@@ -598,11 +588,12 @@ namespace HousingPos.Gui
         #endregion
 
 
-        #region Chocobo Save
+        #region Chocobo Shit
         private bool LoadChocoboSave(string str)
         {
             try
             {
+                Config.HousingItemList.Clear();
                 var chocoboInput = JsonConvert.DeserializeObject<ChocoboInput>(str);
                 int failed = 0;
                 int successed = 0;
@@ -620,14 +611,15 @@ namespace HousingPos.Gui
                 bool oldSave = false;
                 foreach (var chocoboItem in chocoboInput.list)
                 {
-                    var iconIdOrFurnitureKey = chocoboItem.categoryId;
-                    var furniture = Plugin.Interface.Data.GetExcelSheet<HousingFurniture>().GetRow(iconIdOrFurnitureKey + 196608);
+                    var iconIdOrCategoryId = chocoboItem.categoryId;
+                    var furniture = Plugin.Interface.Data.GetExcelSheet<HousingFurniture>().GetRow(iconIdOrCategoryId + 0x30000);
                     if (furniture == null)
                     {
                         oldSave = true;
-                        var furnitureId = iconToFurniture.ContainsKey(iconIdOrFurnitureKey) ? (int)iconToFurniture[iconIdOrFurnitureKey] : -1;
+                        var furnitureId = iconToFurniture.ContainsKey(iconIdOrCategoryId) ? (int)iconToFurniture[iconIdOrCategoryId] : -1;
                         if(furnitureId == -1)
                         {
+                            Plugin.Log($"Cannot find iconIdOrCategoryId:{iconIdOrCategoryId}");
                             failed += chocoboItem.count;
                             continue;
                         }
@@ -644,7 +636,7 @@ namespace HousingPos.Gui
                         if (float.IsNaN(rotation))
                             rotation = 0;
                         Config.HousingItemList.Add(new HousingItem(
-                            furniture.ModelKey, item.RowId, 0, x, y, z, rotation, item.Name));
+                            furniture.RowId, furniture.ModelKey, item.RowId, 0, x, y, z, rotation, item.Name));
                         successed++;
                     }
                     Config.ResetRecord();
@@ -684,18 +676,7 @@ namespace HousingPos.Gui
                         try
                         {
                             Config.HousingItemList = JsonConvert.DeserializeObject<List<HousingItem>>(str);
-                            foreach (var item in Config.HousingItemList)
-                            {
-                                try
-                                {
-                                    item.Name = Plugin.Interface.Data.GetExcelSheet<Item>().GetRow(item.ItemKey).Name;
-                                }
-                                catch (Exception e)
-                                {
-                                    Plugin.LogError($"Error while translating item#{item.ItemKey}: {e.Message}", e.ToString());
-                                }
-                            }
-                            Config.HousingItemList = Config.HousingItemList.Where(e => e.Name != "").ToList();
+                            Plugin.TranslateFurnitureList(ref Config.HousingItemList);
                             Config.ResetRecord();
                             Plugin.Log(String.Format(_localizer.Localize("Imported {0} items from Cloud."), Config.HousingItemList.Count));
                         }

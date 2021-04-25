@@ -9,8 +9,9 @@ namespace HousingPos.Objects
 {
     public class HousingItem
     {
-        public static HousingItem Empty => new HousingItem(0, 0, 0, 0, 0, 0, 0, "null");
+        public static HousingItem Empty => new HousingItem(0, 0, 0, 0, 0, 0, 0, 0, "null");
 
+        public uint FurnitureKey;
         public ushort ModelKey;
         public uint ItemKey;
         public byte Stain;
@@ -25,8 +26,9 @@ namespace HousingPos.Objects
         // (radial distance, azimuthal angle, polar angle)
         public Vector4 relative = Vector4.Zero;
 
-        public HousingItem(ushort modelKey, uint itemKey, byte stain, float x, float y, float z, float rotate, string name)
+        public HousingItem(uint furnitureKey, ushort modelKey, uint itemKey, byte stain, float x, float y, float z, float rotate, string name)
         {
+            FurnitureKey = furnitureKey;
             ModelKey = modelKey;
             ItemKey = itemKey;
             Stain = stain;

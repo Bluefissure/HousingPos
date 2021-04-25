@@ -71,6 +71,7 @@ namespace HousingPos.Gui
             zh.Add("Clear", "清空");
             zh.Add("Close", "关闭");
             zh.Add("Cancel", "取消");
+            zh.Add("Color", "染色");
             zh.Add("Location", "位置");
             zh.Add("Send Data", "发送数据");
             zh.Add("Upload Name:", "命名:");

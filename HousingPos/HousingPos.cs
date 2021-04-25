@@ -22,6 +22,7 @@ using Dalamud.Hooking;
 using HousingPos.Gui;
 using System.Threading;
 using System.Windows.Forms;
+using ImGuiScene;
 
 namespace HousingPos
 {
@@ -37,7 +38,10 @@ namespace HousingPos
         public SigScanner Scanner { get; private set; }
 
         private Localizer _localizer;
-        private Thread thread;
+
+        // Texture dictionary for the housing item icons.
+        public readonly Dictionary<ushort, TextureWrap> TextureDictionary = new Dictionary<ushort, TextureWrap>();
+
         private bool threadRunning = false;
 
         public List<HousingItem> HousingItemList = new List<HousingItem>();
@@ -54,6 +58,9 @@ namespace HousingPos
         private Hook<UIFuncDelegate> UIFuncHook;
         public void Dispose()
         {
+            foreach (var t in this.TextureDictionary)
+                t.Value?.Dispose();
+            TextureDictionary.Clear();
             LoadHousingFuncHook.Disable();
             UIFuncHook.Disable();
             Config.PlaceAnywhere = false;
@@ -137,27 +144,6 @@ namespace HousingPos
             FurnitureList = FurnitureList.Where(e => e.Name != "").ToList();
         }
 
-        public void Loop()
-        {
-            try
-            {
-                while (this.threadRunning)
-                {
-                    if (Config.Previewing)
-                    {
-                        Dalamud.Game.Internal.Gui.Addon.Addon housingMenu = Interface.Framework.Gui.GetAddonByName("HousingMenu", 1);
-                        if(housingMenu != null)
-                        {
-                            Log("Addon occured!");
-                        }
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                Log("Don't crash the game");
-            }
-        }
         private void UIFuncDetour(Int64 a1, UInt32 a2, char a3)
         {
             //Log($"TestFuncHook: {a1}, {a2}, {(int)a3}");

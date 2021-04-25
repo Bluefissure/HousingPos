@@ -15,6 +15,7 @@ using Lumina.Excel.GeneratedSheets;
 using Dalamud.Interface;
 using System.Diagnostics;
 using System.Globalization;
+using Dalamud.Data.LuminaExtensions;
 
 namespace HousingPos.Gui
 {
@@ -53,6 +54,50 @@ namespace HousingPos.Gui
                 ImGui.EndChild();
             }
         }
+
+        #region Helper Functions
+        public void DrawIcon(ushort icon, Vector2 size)
+        {
+            if (icon < 65000)
+            {
+                if (Plugin.TextureDictionary.ContainsKey(icon))
+                {
+                    var tex = Plugin.TextureDictionary[icon];
+                    if (tex == null || tex.ImGuiHandle == IntPtr.Zero)
+                    {
+                        ImGui.PushStyleColor(ImGuiCol.Border, new Vector4(1, 0, 0, 1));
+                        ImGui.BeginChild("FailedTexture", size);
+                        ImGui.Text(icon.ToString());
+                        ImGui.EndChild();
+                        ImGui.PopStyleColor();
+                    }
+                    else
+                        ImGui.Image(Plugin.TextureDictionary[icon].ImGuiHandle, size);
+                }
+                else
+                {
+                    ImGui.BeginChild("WaitingTexture", size, true);
+                    ImGui.EndChild();
+
+                    Plugin.TextureDictionary[icon] = null;
+
+                    Task.Run(() =>
+                    {
+                        try
+                        {
+                            var iconTex = Plugin.Interface.Data.GetIcon(icon);
+                            var tex = Plugin.Interface.UiBuilder.LoadImageRaw(iconTex.GetRgbaImageData(), iconTex.Header.Width, iconTex.Header.Height, 4);
+                            if (tex != null && tex.ImGuiHandle != IntPtr.Zero)
+                                Plugin.TextureDictionary[icon] = tex;
+                        }
+                        catch
+                        {
+                        }
+                    });
+                }
+            }
+        }
+        #endregion
 
         #region Basic UI
         private void DrawGeneralSettings()
@@ -472,6 +517,12 @@ namespace HousingPos.Gui
                     displayName = '\ue06f' + displayName;
                 if (housingItem.children.Count == 0)
                 {
+                    var item = Plugin.Interface.Data.GetExcelSheet<Item>().GetRow(housingItem.ItemKey);
+                    if (item != null)
+                    {
+                        DrawIcon(item.Icon, new Vector2(20, 20));
+                        ImGui.SameLine();
+                    }
                     if (Config.Grouping && Config.GroupingList.IndexOf(i) != -1)
                     {
                         if (Config.GroupingList.IndexOf(i) == 0)
@@ -488,6 +539,12 @@ namespace HousingPos.Gui
                 }
                 else
                 {
+                    var item = Plugin.Interface.Data.GetExcelSheet<Item>().GetRow(housingItem.ItemKey);
+                    if (item != null)
+                    {
+                        DrawIcon(item.Icon, new Vector2(20, 20));
+                        ImGui.SameLine();
+                    }
                     bool open1 = ImGui.TreeNode(displayName);
                     ImGui.NextColumn();
                     DrawRow(i, housingItem);
@@ -497,6 +554,12 @@ namespace HousingPos.Gui
                         {
                             var childItem = housingItem.children[j];
                             displayName = childItem.Name;
+                            item = Plugin.Interface.Data.GetExcelSheet<Item>().GetRow(childItem.ItemKey);
+                            if (item != null)
+                            {
+                                DrawIcon(item.Icon, new Vector2(20, 20));
+                                ImGui.SameLine();
+                            }
                             ImGui.Text(displayName);
                             ImGui.NextColumn();
                             DrawRow(i, childItem, j);

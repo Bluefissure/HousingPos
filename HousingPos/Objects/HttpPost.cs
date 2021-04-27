@@ -39,16 +39,18 @@ namespace HousingPos.Objects
                 return "You Can't Upload An Empty List.";
             HttpClient httpClient = new HttpClient();
             var UserHash = GetMD5(UserId, Md5Salt);
-            var values = new Dictionary<string, string>
+            var values = new
             {
-                {"LocationId", LocationId.ToString()},
-                {"UploadName", UploadName },
-                {"Items", str },
-                {"Tags", tags },
-                {"Uploader", Uploader },
-                {"UserId",UserHash }
+                LocationId = LocationId.ToString(),
+                UploadName = UploadName,
+                Items = str,
+                Tags = tags ,
+                Uploader = Uploader,
+                UserId = UserHash
             };
-            HttpContent data = new FormUrlEncodedContent(values);
+            var stringPayload = JsonConvert.SerializeObject(values);
+            var data = new StringContent(stringPayload, Encoding.UTF8, "application/json");
+
             HttpResponseMessage response = await httpClient.PostAsync(Uri + "/index.php", data);
             response.EnsureSuccessStatusCode();
             string resultStr = await response.Content.ReadAsStringAsync().WithTimeout(TimeSpan.FromSeconds(10));

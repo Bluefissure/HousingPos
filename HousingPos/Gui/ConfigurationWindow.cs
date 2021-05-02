@@ -955,9 +955,12 @@ namespace HousingPos.Gui
                                 string res = posttask.Result;
                                 Plugin.Log(res);
                             }
-                            catch (Exception e)
+                            catch (AggregateException e)
                             {
-                                Plugin.LogError($"Error while Postdata: {e.Message}", e.ToString());
+                                foreach (var errInner in e.InnerExceptions)
+                                {
+                                    Plugin.LogError($"Error while Postdata: {errInner.Message}", e.ToString()); //this will call ToString() on the inner execption and get you message, stacktrace and you could perhaps drill down further into the inner exception of it if necessary 
+                                }
                                 CanUpload = true;
                             }
                         });

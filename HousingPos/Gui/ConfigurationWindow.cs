@@ -27,7 +27,7 @@ namespace HousingPos.Gui
         private int _selectedLanguage;
         private Localizer _localizer;
         private string CustomTag = string.Empty;
-        private Dictionary<uint, uint> iconToFurniture = new Dictionary<uint, uint> { };
+        private readonly Dictionary<uint, uint> iconToFurniture = new() { };
 
         public ConfigurationWindow(HousingPos plugin) : base(plugin)
         {
@@ -98,6 +98,7 @@ namespace HousingPos.Gui
             }
         }
         #endregion
+
 
         #region Basic UI
         private void DrawGeneralSettings()

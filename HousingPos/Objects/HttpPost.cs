@@ -49,8 +49,8 @@ namespace HousingPos.Objects
                 UserId = UserHash
             };
             var stringPayload = JsonConvert.SerializeObject(values);
-            var data = new StringContent(stringPayload, Encoding.UTF8, "application/json");
-
+            var data = new StringContent(stringPayload, Encoding.UTF8);
+            data.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
             HttpResponseMessage response = await httpClient.PostAsync(Uri + "/index.php", data);
             response.EnsureSuccessStatusCode();
             string resultStr = await response.Content.ReadAsStringAsync().WithTimeout(TimeSpan.FromSeconds(10));

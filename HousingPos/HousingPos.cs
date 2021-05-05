@@ -50,8 +50,12 @@ namespace HousingPos
 
         public IntPtr LoadHousingFunc;
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-        private delegate void LoadHousingFuncDelegate(Int64 a1, Int64 a2);
+        private delegate Int64 LoadHousingFuncDelegate(Int64 a1, Int64 a2);
         private Hook<LoadHousingFuncDelegate> LoadHousingFuncHook;
+        public IntPtr LoadHouFurFunc;
+        [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
+        private delegate void LoadHouFurFuncDelegate(Int64 a1, IntPtr a2);
+        private Hook<LoadHouFurFuncDelegate> LoadHouFurFuncHook;
         public IntPtr UIFunc;
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
         private delegate void UIFuncDelegate(Int64 a1, UInt32 a2, char a3);
@@ -61,11 +65,12 @@ namespace HousingPos
             foreach (var t in this.TextureDictionary)
                 t.Value?.Dispose();
             TextureDictionary.Clear();
+            //LoadHouFurFuncHook.Disable();
             LoadHousingFuncHook.Disable();
             UIFuncHook.Disable();
             Config.PlaceAnywhere = false;
             Interface.ClientState.TerritoryChanged -= TerritoryChanged;
-            // Interface.Framework.Network.OnNetworkMessage -= OnNetwork;
+            Interface.Framework.Network.OnNetworkMessage -= OnNetwork;
             Interface.CommandManager.RemoveHandler("/xhouse");
             Gui?.Dispose();
             Interface?.Dispose();
@@ -91,7 +96,7 @@ namespace HousingPos
                 HelpMessage = "/xhouse - load housing item list."
             });
             Gui = new PluginUi(this);
-            // Interface.Framework.Network.OnNetworkMessage += OnNetwork;
+            Interface.Framework.Network.OnNetworkMessage += OnNetwork;
             Interface.ClientState.TerritoryChanged += TerritoryChanged;
 
         }
@@ -99,6 +104,7 @@ namespace HousingPos
         {
             UIFunc = Interface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 89 77 04") + 5;
             LoadHousingFunc = Interface.TargetModuleScanner.ScanText("48 8B 41 08 48 85 C0 74 09 48 8D 48 10");
+            //LoadHouFurFunc = Interface.TargetModuleScanner.ScanText("48 8B FA 0F 97 C3") - 0xE;
 
             UIFuncHook = new Hook<UIFuncDelegate>(
                 UIFunc,
@@ -108,9 +114,17 @@ namespace HousingPos
                 LoadHousingFunc,
                 new LoadHousingFuncDelegate(LoadHousingFuncDetour)
             );
+            /*
+            LoadHouFurFuncHook = new Hook<LoadHouFurFuncDelegate>(
+                LoadHouFurFunc,
+                new LoadHouFurFuncDelegate(LoadHouFurFuncDetour)
+            );
+            */
             UIFuncHook.Enable();
             LoadHousingFuncHook.Enable();
+            //LoadHouFurFuncHook.Enable();
         }
+
 
         public void RefreshFurnitureList(ref List<HousingItem> FurnitureList)
         {
@@ -175,7 +189,14 @@ namespace HousingPos
             this.UIFuncHook.Original(a1, a2, a3);
         }
 
-        private void LoadHousingFuncDetour(Int64 a1, Int64 a2)
+
+        public void LoadHouFurFuncDetour(Int64 a1, IntPtr a2)
+        {
+            PluginLog.Log($"a1:{a1:X} a2:{a2:X}");
+            this.LoadHouFurFuncHook.Original(a1, a2);
+        }
+
+        private Int64 LoadHousingFuncDetour(Int64 a1, Int64 a2)
         {
             IntPtr dataPtr = (IntPtr)a2;
 
@@ -187,7 +208,7 @@ namespace HousingPos
                 Config.DrawScreen = false;
                 Config.Save();
                 this.LoadHousingFuncHook.Original(a1, a2);
-                return;
+                return this.LoadHousingFuncHook.Original(a1, a2);
             }
             if (Config.Previewing)
             {
@@ -208,6 +229,17 @@ namespace HousingPos
                 // Log($"curPage:{curPage}");
                 */
                 PreviewPages.Add(curPage);
+                List<string> compatibleTalks = new()
+                {
+                    "CmnDefHousingObject",
+                    "CmnDefRetainerBell",
+                    "ComDefCompanyChest",
+                    "CmnDefBeautySalon",
+                    "CmnDefCutSceneReplay",
+                    "CmnDefMiniGame",
+                    "CmnDefCabinet",
+                    "HouFurVisitNote"
+                };
                 for (int i = 12; i < posArr.Length && i + 24 < posArr.Length; i += 24)
                 {
                     var hashIndex = ((i - 12) / 24) + curPage * 100;
@@ -216,44 +248,81 @@ namespace HousingPos
                         count++;
                         var item = Config.HousingItemList[hashIndex];
                         var furniture = Interface.Data.GetExcelSheet<HousingFurniture>().GetRow(item.FurnitureKey);
+                        ushort furnitureNetId = (ushort)(item.FurnitureKey - 0x30000);
                         byte[] itemBytes = new byte[24];
                         itemBytes[2] = 1;
                         if (furniture.CustomTalk.Row > 0)
                         {
-                            string talk = furniture.CustomTalk.Value.Name;
-                            if (talk.StartsWith("CmnDefHousingDish"))
-                            {
-                                itemBytes[2] = 0;
-                            }
-                            else if (talk.StartsWith("CmnDefHousingObject"))
+                            string talk = furniture.CustomTalk.Value.Name.ToString().Split('_')[0];
+                            if (compatibleTalks.Contains(talk))
                             {
                                 itemBytes[2] = 1;
                             }
                             else
                             {
-                                PluginLog.Log($"ignore {furniture.Item.Value.Name}:{furniture.CustomTalk.Value.Name}");
-                                Array.Copy(itemBytes, 0, posArr, i, 24);
-                                continue;
+                                switch (talk)
+                                {
+                                    case "CmnDefHousingDish":
+                                        itemBytes[2] = 0;
+                                        break;
+                                    case "HouFurOrchestrion":
+                                        itemBytes[2] = 2;
+                                        break;
+                                    case "HouFurAquarium":
+                                        furnitureNetId = 0x1EF;
+                                        itemBytes[2] = 1;
+                                        break;
+                                    case "HouFurVase":
+                                        ushort oldId = furnitureNetId;
+                                        furnitureNetId = oldId switch
+                                        {
+                                            196828 - 0x30000 => 196751 - 0x30000,
+                                            196829 - 0x30000 => 196752 - 0x30000,
+                                            _ => 196753 - 0x30000,
+                                        };
+                                        itemBytes[2] = 1;
+                                        break;
+                                    case "HouFurPlantPot":
+                                        furnitureNetId = 0x160;
+                                        itemBytes[2] = 1;
+                                        break;
+                                    case "HouFurPicture":
+                                    case "HouFurFishprint":
+                                        furnitureNetId = (ushort)(furnitureNetId == 0x222 ? 0x2F0 : 0x1E);
+                                        itemBytes[2] = 1;
+                                        break;
+                                    case "HouFurWallpaperPartition":
+                                        furnitureNetId = 0x20C;
+                                        itemBytes[2] = 1;
+                                        break;
+                                    default:
+                                        PluginLog.Log($"ignore {furniture.Item.Value.Name}:{furniture.CustomTalk.Value.Name}");
+                                        Array.Copy(itemBytes, 0, posArr, i, 24);
+                                        count--;
+                                        continue;
+                                }
                             }
                         }
-                        BitConverter.GetBytes((ushort)(item.FurnitureKey - 0x30000)).CopyTo(itemBytes, 0);
+
+                        BitConverter.GetBytes(furnitureNetId).CopyTo(itemBytes, 0);
                         itemBytes[4] = item.Stain;
                         BitConverter.GetBytes(item.Rotate).CopyTo(itemBytes, 8);
                         BitConverter.GetBytes(item.X).CopyTo(itemBytes, 12);
                         BitConverter.GetBytes(item.Y).CopyTo(itemBytes, 16);
                         BitConverter.GetBytes(item.Z).CopyTo(itemBytes, 20);
-
-                        byte[] tmpArr = new byte[6];
-                        Array.Copy(itemBytes, 2, tmpArr, 0, 6);
-                        // PluginLog.Log($"Replace {item.Name}:" + (BitConverter.ToString(tmpArr).Replace("-", " ")));
+                        /*
+                        byte[] tmpArr = new byte[24];
+                        Array.Copy(itemBytes, 0, tmpArr, 0, 24);
+                        PluginLog.Log($"Replace {item.Name}:" + (BitConverter.ToString(tmpArr).Replace("-", " ")));
+                        */
                         Array.Copy(itemBytes, 0, posArr, i, 24);
                     }
                 }
                 Log(String.Format(_localizer.Localize("Previewing {0} furnitures."), count));
                 PreviewTerritory = Interface.ClientState.TerritoryType;
                 Marshal.Copy(posArr, 0, dataPtr, 2416);
-                this.LoadHousingFuncHook.Original(a1, a2);
-                return;
+                var result = this.LoadHousingFuncHook.Original(a1, a2);
+                return result;
             }
 
 
@@ -265,6 +334,11 @@ namespace HousingPos
                 Config.lastPosPackageTime = DateTime.Now;
                 Config.Save();
             }
+            /*
+            byte[] headArr = new byte[12];
+            Array.Copy(posArr, 0, headArr, 0, 12);
+            Log($"Head: {BitConverter.ToString(headArr).Replace('-', ' ')}");
+            */
             int cnt = 0;
             for (int i = 12; i < posArr.Length && i + 24 < posArr.Length; i += 24)
             {
@@ -272,10 +346,18 @@ namespace HousingPos
                 var furniture = Interface.Data.GetExcelSheet<HousingFurniture>().GetRow(furnitureKey);
                 var item = furniture.Item.Value;
                 if (item.RowId == 0) continue;
-                byte[] tmpArr = new byte[6];
-                Array.Copy(posArr, i + 2, tmpArr, 0, 6);
+#if DEBUG
+                byte[] tmpArr = new byte[24];
+                Array.Copy(posArr, i, tmpArr, 0, 24);
+                PluginLog.Log($"{item.Name}:" + (BitConverter.ToString(tmpArr).Replace("-", " ")));
+                if (furniture.CustomTalk.Row > 0 || furniture.Item.Value.Name.ToString().EndsWith("空白隔离墙"))
+                {
+                    string talk = furniture.CustomTalk.Value.Name;
+                    PluginLog.Log($"FurnitureTalk {furniture.Item.Value.Name}: {talk}");
+                    PluginLog.Log(BitConverter.ToString(tmpArr).Replace("-", " "));
+                }
+#endif
 
-                // PluginLog.Log($"{item.Name}:" + (BitConverter.ToString(tmpArr).Replace("-", " ")));
                 byte stain = posArr[i + 4];
                 var rotate = BitConverter.ToSingle(posArr, i + 8);
                 var x = BitConverter.ToSingle(posArr, i + 12);
@@ -295,7 +377,7 @@ namespace HousingPos
                     ));
             }
             // Log($"Load {cnt} furnitures.");
-            this.LoadHousingFuncHook.Original(a1, a2);
+            return this.LoadHousingFuncHook.Original(a1, a2);
         }
         private void TerritoryChanged(object sender, ushort e)
         {
@@ -327,88 +409,16 @@ namespace HousingPos
             PluginLog.LogError(detail_message == "" ? msg : detail_message);
             Interface.Framework.Gui.Chat.PrintError(msg);
         }
-        /*
         public void OnNetwork(IntPtr dataPtr, ushort opCode, uint sourceActorId, uint targetActorId, NetworkMessageDirection direction)
         {
             return;
-            var OpcodeLoadHousing = Int32.Parse(Opcode.LoadHousing, NumberStyles.HexNumber);
-            var OpcodeMoveItem = Int32.Parse(Opcode.MoveItem, NumberStyles.HexNumber);
             if (direction == NetworkMessageDirection.ZoneDown)
             {
-                if (opCode != OpcodeLoadHousing)
-                {
-                    return;
-                }
-                byte[] posArr = new byte[2416];
-                Marshal.Copy(dataPtr, posArr, 0, 2416);
-                if (BitConverter.ToString(posArr).Replace("-", " ").StartsWith("FF FF FF FF FF FF FF FF"))
-                {
-                    HousingItemList.Clear();
-                    return;
-                }
-                if (DateTime.Now > Config.lastPosPackageTime.AddSeconds(5))
-                {
-                    HousingItemList.Clear();
-                    Config.HousingItemList.Clear();
-                    Config.lastPosPackageTime = DateTime.Now;
-                    Config.Save();
-                }
-                for (int i = 12; i < posArr.Length && i + 24 < posArr.Length; i += 24)
-                {
-                    var modelKey = BitConverter.ToUInt16(posArr, i);
-                    var item = Interface.Data.GetExcelSheet<HousingFurniture>().GetRow((uint)(modelKey + 196608)).Item.Value;
-                    if (item.RowId == 0) continue;
-                    var rotate = BitConverter.ToSingle(posArr, i + 8);
-                    var x = BitConverter.ToSingle(posArr, i + 12);
-                    var y = BitConverter.ToSingle(posArr, i + 16);
-                    var z = BitConverter.ToSingle(posArr, i + 20);
-                    HousingItemList.Add(new HousingItem(
-                            modelKey,
-                            item.RowId,
-                            x,
-                            y,
-                            z,
-                            rotate,
-                            item.Name
-                        ));
-                }
-                //Log($"Load {Config.HousingItemList.Count} items.");
-                //Config.Save();
-            }
-            else
-            {
-                //if (opCode != OpcodeMoveItem || !Config.ForceMove)
-                if (opCode != OpcodeMoveItem)
-                {
-                    return;
-                }
-                byte[] posArr = new byte[28];
-                Marshal.Copy(dataPtr, posArr, 0, 28);
-                //Log(BitConverter.ToString(posArr).Replace("-", " "));
-                float x = BitConverter.ToSingle(posArr, 12);
-                float y = BitConverter.ToSingle(posArr, 16);
-                float z = BitConverter.ToSingle(posArr, 20);
-                float rotate = BitConverter.ToSingle(posArr, 24);
-                Log($"({x:N3}, {y:N3}, {z:N3}, {rotate:N3}) ==>");
-                x = Config.PlaceX;
-                y = Config.PlaceY;
-                z = Config.PlaceZ;
-                rotate = Config.PlaceRotate;
-                Log($"({x:N3}, {y:N3}, {z:N3}, {rotate:N3})");
-                byte[] bx = BitConverter.GetBytes(x);
-                bx.CopyTo(posArr, 12);
-                byte[] by = BitConverter.GetBytes(y);
-                by.CopyTo(posArr, 16);
-                byte[] bz = BitConverter.GetBytes(z);
-                bz.CopyTo(posArr, 20);
-                byte[] br = BitConverter.GetBytes(rotate);
-                br.CopyTo(posArr, 24);
-                Marshal.Copy(posArr, 0, dataPtr, 28);
-                // Config.ForceMove = false;
-                Config.Save();
+                ushort[] filteredOpcodes = new ushort[] { 439, 0x1CB, 0xA1, 0x269, 0x30C, 0x103, 0x263};
+                if(filteredOpcodes.ToList().IndexOf(opCode) == -1)
+                    Log($"Receive opcode:0x{opCode:X}");
             }
         }
-        */
     }
 
 }

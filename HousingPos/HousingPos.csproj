@@ -1,126 +1,42 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{479ADEA9-780A-4A8E-98A1-82C0399176E4}</ProjectGuid>
+    <TargetFramework>net5.0-windows</TargetFramework>
     <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>HousingPos</RootNamespace>
-    <AssemblyName>HousingPos</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <LangVersion>latest</LangVersion>
-    <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Dalamud, Version=5.2.2.1, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\Git\_Dalamud_\Dalamud\Dalamud\bin\Debug\Dalamud.dll</HintPath>
-    </Reference>
-    <Reference Include="ImGui.NET, Version=1.72.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\Git\_Dalamud_\Dalamud\Dalamud\bin\Debug\ImGui.NET.dll</HintPath>
-    </Reference>
-    <Reference Include="ImGuiScene, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\Git\_Dalamud_\Dalamud\Dalamud\bin\Debug\ImGuiScene.dll</HintPath>
-    </Reference>
-    <Reference Include="IndexRange, Version=1.0.0.0, Culture=neutral, PublicKeyToken=35e6a3c4212514c6, processorArchitecture=MSIL">
-      <HintPath>..\packages\IndexRange.1.0.0\lib\net471\IndexRange.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Lumina, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\Git\_Dalamud_\Dalamud\Dalamud\bin\Debug\Lumina.dll</HintPath>
-    </Reference>
-    <Reference Include="Lumina.Excel, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\Git\_Dalamud_\Dalamud\Dalamud\bin\Debug\Lumina.Excel.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpDX.4.2.0\lib\net45\SharpDX.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX.Mathematics, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpDX.Mathematics.4.2.0\lib\net45\SharpDX.Mathematics.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Buffers, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Buffers.4.4.0\lib\netstandard2.0\System.Buffers.dll</HintPath>
-    </Reference>
-    <Reference Include="System.ComponentModel.Annotations, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.ComponentModel.Annotations.4.7.0\lib\net461\System.ComponentModel.Annotations.dll</HintPath>
-    </Reference>
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Drawing.Common, Version=4.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Drawing.Common.4.6.0\lib\net461\System.Drawing.Common.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Memory.4.5.3\lib\netstandard2.0\System.Memory.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Numerics.Vectors, Version=4.1.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Numerics.Vectors.4.4.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.5.2\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
-    </Reference>
-    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
+    <PackageReference Include="IndexRange" Version="1.0.0" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="SharpDX" Version="4.2.0" />
+    <PackageReference Include="SharpDX.Mathematics" Version="4.2.0" />
+    <PackageReference Include="System.Buffers" Version="4.4.0" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="4.7.0" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+    <PackageReference Include="System.Drawing.Common" Version="4.6.0" />
+    <PackageReference Include="System.Memory" Version="4.5.3" />
+    <PackageReference Include="System.Numerics.Vectors" Version="4.4.0" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.2" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configuration.cs" />
-    <Compile Include="Gui\ConfigurationWindow.cs" />
-    <Compile Include="Gui\Localizer.cs" />
-    <Compile Include="Gui\Window.cs" />
-    <Compile Include="HousingPos.cs" />
-    <Compile Include="Memory.cs" />
-    <Compile Include="Objects\ChocoboItem.cs" />
-    <Compile Include="Objects\ChocoboInput.cs" />
-    <Compile Include="Objects\CloudMap.cs" />
-    <Compile Include="Objects\HousingItem.cs" />
-    <Compile Include="Objects\HousingPosLanguage.cs" />
-    <Compile Include="Objects\HttpPost.cs" />
-    <Compile Include="Objects\OpcodeDefinition.cs" />
-    <Compile Include="PluginUi.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Win32Clipboard.cs" />
+    <Reference Include="Dalamud">
+      <HintPath>..\..\..\Dalamud\Dalamud.Updater\bin\Release\6.0.0.0\Dalamud.dll</HintPath>
+    </Reference>
+    <Reference Include="ImGui.NET">
+      <HintPath>..\..\..\Dalamud\Dalamud.Updater\bin\Release\6.0.0.0\ImGui.NET.dll</HintPath>
+    </Reference>
+    <Reference Include="ImGuiScene">
+      <HintPath>..\..\..\Dalamud\Dalamud.Updater\bin\Release\6.0.0.0\ImGuiScene.dll</HintPath>
+    </Reference>
+    <Reference Include="Lumina">
+      <HintPath>..\..\..\Dalamud\Dalamud.Updater\bin\Release\6.0.0.0\Lumina.dll</HintPath>
+    </Reference>
+    <Reference Include="Lumina.Excel">
+      <HintPath>..\..\..\Dalamud\Dalamud.Updater\bin\Release\6.0.0.0\Lumina.Excel.dll</HintPath>
+    </Reference>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

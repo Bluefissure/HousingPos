@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 using Dalamud;
 using Dalamud.Plugin;
 using Dalamud.Game.Command;
-using Dalamud.Game.Internal.Network;
-using Dalamud.Game.Internal.Gui;
+using Dalamud.Game.Network;
+using Dalamud.Game.Gui;
 using Lumina;
 using Lumina.Excel.GeneratedSheets;
 using HousingPos.Objects;
@@ -23,6 +23,10 @@ using HousingPos.Gui;
 using System.Threading;
 using System.Windows.Forms;
 using ImGuiScene;
+using Dalamud.IoC;
+using Dalamud.Game.ClientState;
+using Dalamud.Data;
+using Dalamud.Logging;
 
 namespace HousingPos
 {
@@ -31,10 +35,27 @@ namespace HousingPos
     {
         public string Name => "HousingPos";
         public PluginUi Gui { get; private set; }
-        public DalamudPluginInterface Interface { get; private set; }
         public Configuration Config { get; private set; }
         public OpcodeDefinition Opcode { get; private set; }
-        public CommandManager CommandManager = null;
+
+
+        [PluginService]
+        public static CommandManager CommandManager { get; private set; }
+        [PluginService]
+        public static Framework Framework { get; private set; }
+        [PluginService]
+        public static SigScanner SigScanner { get; private set; }
+        [PluginService]
+        public static DalamudPluginInterface Interface { get; private set; }
+        [PluginService]
+        public static GameGui GameGui { get; private set; }
+        [PluginService]
+        public static ChatGui ChatGui { get; private set; }
+        [PluginService]
+        public static ClientState ClientState { get; private set; }
+        [PluginService]
+        public static DataManager Data { get; private set; }
+        [PluginService]
         public SigScanner Scanner { get; private set; }
 
         private Localizer _localizer;
@@ -69,21 +90,17 @@ namespace HousingPos
             LoadHousingFuncHook.Disable();
             UIFuncHook.Disable();
             Config.PlaceAnywhere = false;
-            Interface.ClientState.TerritoryChanged -= TerritoryChanged;
-            Interface.Framework.Network.OnNetworkMessage -= OnNetwork;
-            Interface.CommandManager.RemoveHandler("/xhouse");
+            ClientState.TerritoryChanged -= TerritoryChanged;
+            CommandManager.RemoveHandler("/xhouse");
             Gui?.Dispose();
             Interface?.Dispose();
         }
 
 
-        public void Initialize(DalamudPluginInterface pluginInterface)
+        public HousingPos()
         {
-            Interface = pluginInterface;
-            CommandManager = pluginInterface.CommandManager;
-            Scanner = Interface.TargetModuleScanner;
-            Config = pluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
-            Config.Initialize(pluginInterface);
+            Config = Interface.GetPluginConfig() as Configuration ?? new Configuration();
+            Config.Initialize(Interface);
             RefreshFurnitureList(ref Config.HousingItemList);
             Config.Grouping = false;
             Config.Save();
@@ -91,19 +108,18 @@ namespace HousingPos
             // LoadOffset();
             Initialize();
 
-            Interface.CommandManager.AddHandler("/xhouse", new CommandInfo(CommandHandler)
+            CommandManager.AddHandler("/xhouse", new CommandInfo(CommandHandler)
             {
                 HelpMessage = "/xhouse - load housing item list."
             });
             Gui = new PluginUi(this);
-            Interface.Framework.Network.OnNetworkMessage += OnNetwork;
-            Interface.ClientState.TerritoryChanged += TerritoryChanged;
+            ClientState.TerritoryChanged += TerritoryChanged;
 
         }
         public void Initialize()
         {
-            UIFunc = Interface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 89 77 04") + 5;
-            LoadHousingFunc = Interface.TargetModuleScanner.ScanText("48 8B 41 08 48 85 C0 74 09 48 8D 48 10");
+            UIFunc = Scanner.ScanText("E8 ?? ?? ?? ?? 89 77 04") + 5;
+            LoadHousingFunc = Scanner.ScanText("48 8B 41 08 48 85 C0 74 09 48 8D 48 10");
             //LoadHouFurFunc = Interface.TargetModuleScanner.ScanText("48 8B FA 0F 97 C3") - 0xE;
 
             UIFuncHook = new Hook<UIFuncDelegate>(
@@ -133,7 +149,7 @@ namespace HousingPos
                 if(FurnitureList[i].ModelKey > 0 && FurnitureList[i].FurnitureKey == 0)
                 {
                     FurnitureList[i].FurnitureKey = (uint)(FurnitureList[i].ModelKey + 0x30000);
-                    var furniture = Interface.Data.GetExcelSheet<HousingFurniture>().GetRow(FurnitureList[i].FurnitureKey);
+                    var furniture = Data.GetExcelSheet<HousingFurniture>().GetRow(FurnitureList[i].FurnitureKey);
                     if (furniture == null) continue;
                     FurnitureList[i].ModelKey = furniture.ModelKey;
                 }
@@ -152,7 +168,7 @@ namespace HousingPos
             }
             for (var i = 0; i < FurnitureList.Count; i++)
             {
-                var furniture = Interface.Data.GetExcelSheet<HousingFurniture>().GetRow(FurnitureList[i].FurnitureKey);
+                var furniture = Data.GetExcelSheet<HousingFurniture>().GetRow(FurnitureList[i].FurnitureKey);
                 FurnitureList[i].Name = furniture == null ? "" : furniture.Item.Value.Name;
             }
             FurnitureList = FurnitureList.Where(e => e.Name != "").ToList();
@@ -177,7 +193,7 @@ namespace HousingPos
                     RefreshFurnitureList(ref Config.HousingItemList);
                     Config.HousingItemList = HousingItemList.ToList();
                     Config.HiddenScreenItemHistory = new List<int>();
-                    var territoryTypeId = Interface.ClientState.TerritoryType;
+                    var territoryTypeId = ClientState.TerritoryType;
                     Config.LocationId = territoryTypeId;
                     Config.Save();
                 }
@@ -247,7 +263,7 @@ namespace HousingPos
                     {
                         count++;
                         var item = Config.HousingItemList[hashIndex];
-                        var furniture = Interface.Data.GetExcelSheet<HousingFurniture>().GetRow(item.FurnitureKey);
+                        var furniture = Data.GetExcelSheet<HousingFurniture>().GetRow(item.FurnitureKey);
                         ushort furnitureNetId = (ushort)(item.FurnitureKey - 0x30000);
                         byte[] itemBytes = new byte[24];
                         itemBytes[2] = 1;
@@ -319,7 +335,7 @@ namespace HousingPos
                     }
                 }
                 Log(String.Format(_localizer.Localize("Previewing {0} furnitures."), count));
-                PreviewTerritory = Interface.ClientState.TerritoryType;
+                PreviewTerritory = ClientState.TerritoryType;
                 Marshal.Copy(posArr, 0, dataPtr, 2416);
                 var result = this.LoadHousingFuncHook.Original(a1, a2);
                 return result;
@@ -343,7 +359,7 @@ namespace HousingPos
             for (int i = 12; i < posArr.Length && i + 24 < posArr.Length; i += 24)
             {
                 uint furnitureKey = (uint)(BitConverter.ToUInt16(posArr, i) + 0x30000);
-                var furniture = Interface.Data.GetExcelSheet<HousingFurniture>().GetRow(furnitureKey);
+                var furniture = Data.GetExcelSheet<HousingFurniture>().GetRow(furnitureKey);
                 var item = furniture.Item.Value;
                 if (item.RowId == 0) continue;
 #if DEBUG
@@ -400,14 +416,14 @@ namespace HousingPos
             //if (!Config.PrintMessage) return;
             var msg = $"[{Name}] {message}";
             PluginLog.Log(detail_message == "" ? msg : detail_message);
-            Interface.Framework.Gui.Chat.Print(msg);
+            ChatGui.Print(msg);
         }
         public void LogError(string message, string detail_message = "")
         {
             //if (!Config.PrintError) return;
             var msg = $"[{Name}] {message}";
             PluginLog.LogError(detail_message == "" ? msg : detail_message);
-            Interface.Framework.Gui.Chat.PrintError(msg);
+            ChatGui.PrintError(msg);
         }
         public void OnNetwork(IntPtr dataPtr, ushort opCode, uint sourceActorId, uint targetActorId, NetworkMessageDirection direction)
         {

@@ -1,15 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net5.0-windows</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <OutputType>Library</OutputType>
     <LangVersion>latest</LangVersion>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <UseWindowsForms>true</UseWindowsForms>
-    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="DalamudPackager" Version="2.1.8" />
     <PackageReference Include="IndexRange" Version="1.0.0" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="SharpDX" Version="4.2.0" />
     <PackageReference Include="SharpDX.Mathematics" Version="4.2.0" />
@@ -22,21 +20,29 @@
     <PackageReference Include="System.Numerics.Vectors" Version="4.4.0" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.2" />
   </ItemGroup>
+  <PropertyGroup>
+    <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Dalamud">
-      <HintPath>..\..\..\Dalamud\Dalamud.Updater\bin\Release\6.0.0.0\Dalamud.dll</HintPath>
+      <HintPath>$(DalamudLibPath)Dalamud.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="ImGui.NET">
-      <HintPath>..\..\..\Dalamud\Dalamud.Updater\bin\Release\6.0.0.0\ImGui.NET.dll</HintPath>
+      <HintPath>$(DalamudLibPath)ImGui.NET.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="ImGuiScene">
-      <HintPath>..\..\..\Dalamud\Dalamud.Updater\bin\Release\6.0.0.0\ImGuiScene.dll</HintPath>
+      <HintPath>$(DalamudLibPath)ImGuiScene.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Lumina">
-      <HintPath>..\..\..\Dalamud\Dalamud.Updater\bin\Release\6.0.0.0\Lumina.dll</HintPath>
+      <HintPath>$(DalamudLibPath)Lumina.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Lumina.Excel">
-      <HintPath>..\..\..\Dalamud\Dalamud.Updater\bin\Release\6.0.0.0\Lumina.Excel.dll</HintPath>
+      <HintPath>$(DalamudLibPath)Lumina.Excel.dll</HintPath>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
 </Project>

@@ -8,7 +8,7 @@ namespace HousingPos.Objects
         English = ClientLanguage.English,
         German = ClientLanguage.German,
         French = ClientLanguage.French,
-        ChineseSimplified = ClientLanguage.ChineseSimplified,
+        ChineseSimplified = 4,
         Client = 5
     }
 }

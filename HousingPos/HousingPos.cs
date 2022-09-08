@@ -1,27 +1,16 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Dalamud;
 using Dalamud.Plugin;
 using Dalamud.Game.Command;
 using Dalamud.Game.Network;
 using Dalamud.Game.Gui;
-using Lumina;
 using Lumina.Excel.GeneratedSheets;
 using HousingPos.Objects;
 using System.Runtime.InteropServices;
-using Newtonsoft.Json;
-using System.Reflection;
-using System.IO;
-using System.Globalization;
 using Dalamud.Game;
 using Dalamud.Hooking;
 using HousingPos.Gui;
-using System.Threading;
-using System.Windows.Forms;
 using ImGuiScene;
 using Dalamud.IoC;
 using Dalamud.Game.ClientState;
@@ -93,7 +82,7 @@ namespace HousingPos
             ClientState.TerritoryChanged -= TerritoryChanged;
             CommandManager.RemoveHandler("/xhouse");
             Gui?.Dispose();
-            Interface?.Dispose();
+            // Interface?.Dispose();
         }
 
 

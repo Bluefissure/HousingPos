@@ -7,6 +7,5 @@
     "ApplicableVersion": "any",
     "RepoUrl": "https://github.com/Bluefissure/HousingPos",
     "Tags": ["bluefissure", "housing"],
-    "DalamudApiLevel": 7,
     "Punchline": "A housing tool"
 }

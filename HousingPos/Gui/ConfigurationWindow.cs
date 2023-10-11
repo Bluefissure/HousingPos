@@ -62,41 +62,17 @@ namespace HousingPos.Gui
         {
             if (icon < 65000)
             {
-                if (Plugin.TextureDictionary.ContainsKey(icon))
+                var tex = HousingPos.Tex.GetIcon(icon);
+                if (tex == null || tex.ImGuiHandle == IntPtr.Zero)
                 {
-                    var tex = Plugin.TextureDictionary[icon];
-                    if (tex == null || tex.ImGuiHandle == IntPtr.Zero)
-                    {
-                        ImGui.PushStyleColor(ImGuiCol.Border, new Vector4(1, 0, 0, 1));
-                        ImGui.BeginChild("FailedTexture", size);
-                        ImGui.Text(icon.ToString());
-                        ImGui.EndChild();
-                        ImGui.PopStyleColor();
-                    }
-                    else
-                        ImGui.Image(Plugin.TextureDictionary[icon].ImGuiHandle, size);
+                    ImGui.PushStyleColor(ImGuiCol.Border, new Vector4(1, 0, 0, 1));
+                    ImGui.BeginChild("FailedTexture", size);
+                    ImGui.Text(icon.ToString());
+                    ImGui.EndChild();
+                    ImGui.PopStyleColor();
                 }
                 else
-                {
-                    ImGui.BeginChild("WaitingTexture", size, true);
-                    ImGui.EndChild();
-
-                    Plugin.TextureDictionary[icon] = null;
-
-                    Task.Run(() =>
-                    {
-                        try
-                        {
-                            var iconTex = HousingPos.Data.GetIcon(icon);
-                            var tex = HousingPos.Interface.UiBuilder.LoadImageRaw(iconTex.GetRgbaImageData(), iconTex.Header.Width, iconTex.Header.Height, 4);
-                            if (tex != null && tex.ImGuiHandle != IntPtr.Zero)
-                                Plugin.TextureDictionary[icon] = tex;
-                        }
-                        catch
-                        {
-                        }
-                    });
-                }
+                    ImGui.Image(tex.ImGuiHandle, size);
             }
         }
         #endregion

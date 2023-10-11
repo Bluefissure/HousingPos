@@ -16,6 +16,8 @@ using Dalamud.IoC;
 using Dalamud.Game.ClientState;
 using Dalamud.Data;
 using Dalamud.Logging;
+using Dalamud.Plugin.Services;
+using Dalamud.Interface.Internal;
 
 namespace HousingPos
 {
@@ -29,28 +31,32 @@ namespace HousingPos
 
 
         [PluginService]
-        public static CommandManager CommandManager { get; private set; }
+        public static ICommandManager CommandManager { get; private set; }
         [PluginService]
-        public static Framework Framework { get; private set; }
+        public static IFramework Framework { get; private set; }
         [PluginService]
-        public static SigScanner SigScanner { get; private set; }
+        public static ISigScanner SigScanner { get; private set; }
         [PluginService]
         public static DalamudPluginInterface Interface { get; private set; }
         [PluginService]
-        public static GameGui GameGui { get; private set; }
+        public static IGameGui GameGui { get; private set; }
         [PluginService]
-        public static ChatGui ChatGui { get; private set; }
+        public static IChatGui ChatGui { get; private set; }
         [PluginService]
-        public static ClientState ClientState { get; private set; }
+        public static IClientState ClientState { get; private set; }
         [PluginService]
-        public static DataManager Data { get; private set; }
+        public static IDataManager Data { get; private set; }
         [PluginService]
-        public SigScanner Scanner { get; private set; }
+        public static ISigScanner Scanner { get; private set; }
+        [PluginService]
+        public static IGameInteropProvider Hook { get; private set; }
+        [PluginService]
+        public static ITextureProvider Tex { get; private set; }
 
         private Localizer _localizer;
 
         // Texture dictionary for the housing item icons.
-        public readonly Dictionary<ushort, TextureWrap> TextureDictionary = new Dictionary<ushort, TextureWrap>();
+        // public readonly Dictionary<ushort, TextureWrap> TextureDictionary = new Dictionary<ushort, TextureWrap>();
 
         private bool threadRunning = false;
 
@@ -72,9 +78,11 @@ namespace HousingPos
         private Hook<UIFuncDelegate> UIFuncHook;
         public void Dispose()
         {
+            /*
             foreach (var t in this.TextureDictionary)
                 t.Value?.Dispose();
             TextureDictionary.Clear();
+            */
             //LoadHouFurFuncHook.Disable();
             LoadHousingFuncHook.Disable();
             UIFuncHook.Disable();
@@ -111,11 +119,11 @@ namespace HousingPos
             LoadHousingFunc = Scanner.ScanText("48 8B 41 08 48 85 C0 74 09 48 8D 48 10");
             //LoadHouFurFunc = Interface.TargetModuleScanner.ScanText("48 8B FA 0F 97 C3") - 0xE;
 
-            UIFuncHook = new Hook<UIFuncDelegate>(
+            UIFuncHook = Hook.HookFromAddress<UIFuncDelegate>(
                 UIFunc,
                 new UIFuncDelegate(UIFuncDetour)
             );
-            LoadHousingFuncHook = new Hook<LoadHousingFuncDelegate>(
+            LoadHousingFuncHook = Hook.HookFromAddress<LoadHousingFuncDelegate>(
                 LoadHousingFunc,
                 new LoadHousingFuncDelegate(LoadHousingFuncDetour)
             );
@@ -384,7 +392,7 @@ namespace HousingPos
             // Log($"Load {cnt} furnitures.");
             return this.LoadHousingFuncHook.Original(a1, a2);
         }
-        private void TerritoryChanged(object sender, ushort e)
+        private void TerritoryChanged(ushort e)
         {
             Config.DrawScreen = false;
             Config.Save();

@@ -5,7 +5,7 @@ using Dalamud.Plugin;
 using Dalamud.Game.Command;
 using Dalamud.Game.Network;
 using Dalamud.Game.Gui;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using HousingPos.Objects;
 using System.Runtime.InteropServices;
 using Dalamud.Game;
@@ -18,6 +18,8 @@ using Dalamud.Data;
 using Dalamud.Logging;
 using Dalamud.Plugin.Services;
 using Dalamud.Interface.Internal;
+using System.Net;
+using Dalamud.Game.ClientState.Conditions;
 
 namespace HousingPos
 {
@@ -37,7 +39,7 @@ namespace HousingPos
         [PluginService]
         public static ISigScanner SigScanner { get; private set; }
         [PluginService]
-        public static DalamudPluginInterface Interface { get; private set; }
+        public static IDalamudPluginInterface Interface { get; private set; }
         [PluginService]
         public static IGameGui GameGui { get; private set; }
         [PluginService]
@@ -51,7 +53,13 @@ namespace HousingPos
         [PluginService]
         public static IGameInteropProvider Hook { get; private set; }
         [PluginService]
+        public static IPluginLog PluginLog { get; private set; }
+        [PluginService]
         public static ITextureProvider Tex { get; private set; }
+        [PluginService]
+        public static IGameNetwork Network { get; private set; }
+        [PluginService]
+        public static ICondition Condition { get; private set; }
 
         private Localizer _localizer;
 
@@ -78,26 +86,21 @@ namespace HousingPos
         private Hook<UIFuncDelegate> UIFuncHook;
         public void Dispose()
         {
-            /*
-            foreach (var t in this.TextureDictionary)
-                t.Value?.Dispose();
-            TextureDictionary.Clear();
-            */
-            //LoadHouFurFuncHook.Disable();
+            //Network.NetworkMessage -= OnNetwork;
+            Condition.ConditionChange -= OnConditionChange;
             LoadHousingFuncHook.Disable();
-            UIFuncHook.Disable();
+            LoadHousingFuncHook.Dispose();
+            //UIFuncHook.Disable();
             Config.PlaceAnywhere = false;
             ClientState.TerritoryChanged -= TerritoryChanged;
             CommandManager.RemoveHandler("/xhouse");
             Gui?.Dispose();
-            // Interface?.Dispose();
         }
-
 
         public HousingPos()
         {
             Config = Interface.GetPluginConfig() as Configuration ?? new Configuration();
-            Config.Initialize(Interface);
+            // Config.Initialize(Interface);
             RefreshFurnitureList(ref Config.HousingItemList);
             Config.Grouping = false;
             Config.Save();
@@ -115,25 +118,22 @@ namespace HousingPos
         }
         public void Initialize()
         {
-            UIFunc = Scanner.ScanText("E8 ?? ?? ?? ?? 89 77 04") + 5;
-            LoadHousingFunc = Scanner.ScanText("48 8B 41 08 48 85 C0 74 09 48 8D 48 10");
+            //Network.NetworkMessage += OnNetwork;
+            //UIFunc = Scanner.ScanText("E8 ?? ?? ?? ?? 89 77 04") + 5;
+            //LoadHousingFunc = Scanner.ScanText("48 8B 41 08 48 85 C0 74 09 48 8D 48 10");
+            LoadHousingFunc = Scanner.ScanText("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 48 89 7C 24 ?? 41 56 48 83 EC 20 48 8B 71 08 48 8B FA");
             //LoadHouFurFunc = Interface.TargetModuleScanner.ScanText("48 8B FA 0F 97 C3") - 0xE;
 
-            UIFuncHook = Hook.HookFromAddress<UIFuncDelegate>(
-                UIFunc,
-                new UIFuncDelegate(UIFuncDetour)
-            );
+            //UIFuncHook = Hook.HookFromAddress<UIFuncDelegate>(
+            //    UIFunc,
+            //    new UIFuncDelegate(UIFuncDetour)
+            //);
+            Condition.ConditionChange += OnConditionChange;
             LoadHousingFuncHook = Hook.HookFromAddress<LoadHousingFuncDelegate>(
                 LoadHousingFunc,
                 new LoadHousingFuncDelegate(LoadHousingFuncDetour)
             );
-            /*
-            LoadHouFurFuncHook = new Hook<LoadHouFurFuncDelegate>(
-                LoadHouFurFunc,
-                new LoadHouFurFuncDelegate(LoadHouFurFuncDetour)
-            );
-            */
-            UIFuncHook.Enable();
+            //UIFuncHook.Enable();
             LoadHousingFuncHook.Enable();
             //LoadHouFurFuncHook.Enable();
         }
@@ -146,9 +146,9 @@ namespace HousingPos
                 if(FurnitureList[i].ModelKey > 0 && FurnitureList[i].FurnitureKey == 0)
                 {
                     FurnitureList[i].FurnitureKey = (uint)(FurnitureList[i].ModelKey + 0x30000);
-                    var furniture = Data.GetExcelSheet<HousingFurniture>().GetRow(FurnitureList[i].FurnitureKey);
+                    Nullable<HousingFurniture> furniture = Data.GetExcelSheet<HousingFurniture>().GetRow(FurnitureList[i].FurnitureKey);
                     if (furniture == null) continue;
-                    FurnitureList[i].ModelKey = furniture.ModelKey;
+                    FurnitureList[i].ModelKey = furniture.Value.ModelKey;
                 }
             }
         }
@@ -165,10 +165,42 @@ namespace HousingPos
             }
             for (var i = 0; i < FurnitureList.Count; i++)
             {
-                var furniture = Data.GetExcelSheet<HousingFurniture>().GetRow(FurnitureList[i].FurnitureKey);
-                FurnitureList[i].Name = furniture == null ? "" : furniture.Item.Value.Name;
+                Nullable<HousingFurniture> furniture = Data.GetExcelSheet<HousingFurniture>().GetRow(FurnitureList[i].FurnitureKey);
+                FurnitureList[i].Name = furniture == null ? "" : furniture.Value.Item.Value.Name.ToString();
             }
             FurnitureList = FurnitureList.Where(e => e.Name != "").ToList();
+        }
+
+
+        private void OnConditionChange(ConditionFlag flag, bool value)
+        {
+            if (flag != ConditionFlag.UsingHousingFunctions)
+            {
+                return;
+            }
+
+            if (Config.Previewing)  // disable decorate UI
+            {
+                LogError(_localizer.Localize("Decorate in preview mode is dangerous!"));
+                LogError(_localizer.Localize("Please exit the house and disable preview!"));
+                return;
+            }
+
+            if (HousingItemList.Count > 0 && Config.HousingItemList.Count == 0)
+            {
+                Log(String.Format(_localizer.Localize("Load {0} furnitures."), HousingItemList.Count));
+                RefreshFurnitureList(ref HousingItemList);
+                RefreshFurnitureList(ref Config.HousingItemList);
+                Config.HousingItemList = HousingItemList.ToList();
+                Config.HiddenScreenItemHistory = new List<int>();
+                var territoryTypeId = ClientState.TerritoryType;
+                Config.LocationId = territoryTypeId;
+                Config.Save();
+            }
+            else
+            {
+                Log(_localizer.Localize("Please clear the furniture list and re-enter house to load current furniture list."));
+            }
         }
 
         private void UIFuncDetour(Int64 a1, UInt32 a2, char a3)
@@ -202,12 +234,13 @@ namespace HousingPos
             this.UIFuncHook.Original(a1, a2, a3);
         }
 
-
+        /*
         public void LoadHouFurFuncDetour(Int64 a1, IntPtr a2)
         {
-            PluginLog.Log($"a1:{a1:X} a2:{a2:X}");
+            PluginLog.Info($"a1:{a1:X} a2:{a2:X}");
             this.LoadHouFurFuncHook.Original(a1, a2);
         }
+        */
 
         private Int64 LoadHousingFuncDetour(Int64 a1, Int64 a2)
         {
@@ -220,7 +253,6 @@ namespace HousingPos
                 HousingItemList.Clear();
                 Config.DrawScreen = false;
                 Config.Save();
-                this.LoadHousingFuncHook.Original(a1, a2);
                 return this.LoadHousingFuncHook.Original(a1, a2);
             }
             if (Config.Previewing)
@@ -264,7 +296,7 @@ namespace HousingPos
                         ushort furnitureNetId = (ushort)(item.FurnitureKey - 0x30000);
                         byte[] itemBytes = new byte[24];
                         itemBytes[2] = 1;
-                        if (furniture.CustomTalk.Row > 0)
+                        if (furniture.CustomTalk.RowId > 0)
                         {
                             string talk = furniture.CustomTalk.Value.Name.ToString().Split('_')[0];
                             if (compatibleTalks.Contains(talk))
@@ -309,7 +341,7 @@ namespace HousingPos
                                         itemBytes[2] = 1;
                                         break;
                                     default:
-                                        PluginLog.Log($"ignore {furniture.Item.Value.Name}:{furniture.CustomTalk.Value.Name}");
+                                        PluginLog.Info($"ignore {furniture.Item.Value.Name}:{furniture.CustomTalk.Value.Name}");
                                         Array.Copy(itemBytes, 0, posArr, i, 24);
                                         count--;
                                         continue;
@@ -334,8 +366,7 @@ namespace HousingPos
                 Log(String.Format(_localizer.Localize("Previewing {0} furnitures."), count));
                 PreviewTerritory = ClientState.TerritoryType;
                 Marshal.Copy(posArr, 0, dataPtr, 2416);
-                var result = this.LoadHousingFuncHook.Original(a1, a2);
-                return result;
+                return this.LoadHousingFuncHook.Original(a1, a2);
             }
 
 
@@ -362,12 +393,12 @@ namespace HousingPos
 #if DEBUG
                 byte[] tmpArr = new byte[24];
                 Array.Copy(posArr, i, tmpArr, 0, 24);
-                PluginLog.Log($"{item.Name}:" + (BitConverter.ToString(tmpArr).Replace("-", " ")));
+                PluginLog.Info($"{item.Name}:" + (BitConverter.ToString(tmpArr).Replace("-", " ")));
                 if (furniture.CustomTalk.Row > 0 || furniture.Item.Value.Name.ToString().EndsWith("空白隔离墙"))
                 {
                     string talk = furniture.CustomTalk.Value.Name;
-                    PluginLog.Log($"FurnitureTalk {furniture.Item.Value.Name}: {talk}");
-                    PluginLog.Log(BitConverter.ToString(tmpArr).Replace("-", " "));
+                    PluginLog.Info($"FurnitureTalk {furniture.Item.Value.Name}: {talk}");
+                    PluginLog.Info(BitConverter.ToString(tmpArr).Replace("-", " "));
                 }
 #endif
 
@@ -386,10 +417,9 @@ namespace HousingPos
                         y,
                         z,
                         rotate,
-                        item.Name
+                        item.Name.ToString()
                     ));
             }
-            // Log($"Load {cnt} furnitures.");
             return this.LoadHousingFuncHook.Original(a1, a2);
         }
         private void TerritoryChanged(ushort e)
@@ -412,24 +442,30 @@ namespace HousingPos
         {
             //if (!Config.PrintMessage) return;
             var msg = $"[{Name}] {message}";
-            PluginLog.Log(detail_message == "" ? msg : detail_message);
+            PluginLog.Info(detail_message == "" ? msg : detail_message);
             ChatGui.Print(msg);
         }
         public void LogError(string message, string detail_message = "")
         {
             //if (!Config.PrintError) return;
             var msg = $"[{Name}] {message}";
-            PluginLog.LogError(detail_message == "" ? msg : detail_message);
+            PluginLog.Error(detail_message == "" ? msg : detail_message);
             ChatGui.PrintError(msg);
         }
         public void OnNetwork(IntPtr dataPtr, ushort opCode, uint sourceActorId, uint targetActorId, NetworkMessageDirection direction)
         {
-            return;
             if (direction == NetworkMessageDirection.ZoneDown)
             {
-                ushort[] filteredOpcodes = new ushort[] { 439, 0x1CB, 0xA1, 0x269, 0x30C, 0x103, 0x263};
-                if(filteredOpcodes.ToList().IndexOf(opCode) == -1)
-                    Log($"Receive opcode:0x{opCode:X}");
+                ushort[] filteredOutOpcodes = new ushort[] { 0x18B, 0x1C5, 0x2B5, 0x36B, 0x206, 0x3A2, 0x145, 0x1E9, 0x36B };
+                byte[] posArr = new byte[2416];
+                Marshal.Copy(dataPtr, posArr, 0, 12);
+                if (BitConverter.ToString(posArr).Replace("-", " ").StartsWith("FF FF FF FF FF FF FF FF"))
+                {
+                    if (filteredOutOpcodes.ToList().IndexOf(opCode) == -1)
+                        Log($"Receive likely yard opcode:0x{opCode:X}");
+                }
+                //if (filteredOutOpcodes.ToList().IndexOf(opCode) == -1)
+                //    Log($"Receive opcode:0x{opCode:X}");
             }
         }
     }

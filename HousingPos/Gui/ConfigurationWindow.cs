@@ -11,12 +11,13 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Numerics;
 using System.Reflection;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using Dalamud.Interface;
 using System.Diagnostics;
 using System.Globalization;
 using Dalamud.Utility;
 using Dalamud.Logging;
+using Dalamud.Interface.Textures;
 
 namespace HousingPos.Gui
 {
@@ -62,8 +63,8 @@ namespace HousingPos.Gui
         {
             if (icon < 65000)
             {
-                var tex = HousingPos.Tex.GetIcon(icon);
-                if (tex == null || tex.ImGuiHandle == IntPtr.Zero)
+                var tex = HousingPos.Tex.GetFromGameIcon(new GameIconLookup(icon));
+                if (tex == null || tex.GetWrapOrEmpty().ImGuiHandle == IntPtr.Zero)
                 {
                     ImGui.PushStyleColor(ImGuiCol.Border, new Vector4(1, 0, 0, 1));
                     ImGui.BeginChild("FailedTexture", size);
@@ -72,7 +73,7 @@ namespace HousingPos.Gui
                     ImGui.PopStyleColor();
                 }
                 else
-                    ImGui.Image(tex.ImGuiHandle, size);
+                    ImGui.Image(tex.GetWrapOrEmpty().ImGuiHandle, size);
             }
         }
         #endregion
@@ -400,7 +401,7 @@ namespace HousingPos.Gui
             ImGui.Text($"{housingItem.Y:N3}"); ImGui.NextColumn();
             ImGui.Text($"{housingItem.Z:N3}"); ImGui.NextColumn();
             ImGui.Text($"{housingItem.Rotate:N3}"); ImGui.NextColumn();
-            var colorName = HousingPos.Data.GetExcelSheet<Stain>().GetRow(housingItem.Stain)?.Name;
+            var colorName = HousingPos.Data.GetExcelSheet<Stain>().GetRow(housingItem.Stain).Name;
             ImGui.Text($"{colorName}"); ImGui.NextColumn();
             string uniqueID = childIndex == -1 ? i.ToString() : i.ToString() + "_" + childIndex.ToString();
             if (Config.BDTH)
@@ -496,10 +497,10 @@ namespace HousingPos.Gui
                     displayName = '\ue06f' + displayName;
                 if (housingItem.children.Count == 0)
                 {
-                    var item = HousingPos.Data.GetExcelSheet<Item>().GetRow(housingItem.ItemKey);
+                    Nullable<Item> item = HousingPos.Data.GetExcelSheet<Item>().GetRow(housingItem.ItemKey);
                     if (item != null)
                     {
-                        DrawIcon(item.Icon, new Vector2(20, 20));
+                        DrawIcon(item.Value.Icon, new Vector2(20, 20));
                         ImGui.SameLine();
                     }
                     if (Config.Grouping && Config.GroupingList.IndexOf(i) != -1)
@@ -518,10 +519,10 @@ namespace HousingPos.Gui
                 }
                 else
                 {
-                    var item = HousingPos.Data.GetExcelSheet<Item>().GetRow(housingItem.ItemKey);
+                    Nullable<Item> item = HousingPos.Data.GetExcelSheet<Item>().GetRow(housingItem.ItemKey);
                     if (item != null)
                     {
-                        DrawIcon(item.Icon, new Vector2(20, 20));
+                        DrawIcon(item.Value.Icon, new Vector2(20, 20));
                         ImGui.SameLine();
                     }
                     bool open1 = ImGui.TreeNode(displayName);
@@ -536,7 +537,7 @@ namespace HousingPos.Gui
                             item = HousingPos.Data.GetExcelSheet<Item>().GetRow(childItem.ItemKey);
                             if (item != null)
                             {
-                                DrawIcon(item.Icon, new Vector2(20, 20));
+                                DrawIcon(item.Value.Icon, new Vector2(20, 20));
                                 ImGui.SameLine();
                             }
                             ImGui.Text(displayName);
@@ -654,7 +655,7 @@ namespace HousingPos.Gui
                 foreach (var chocoboItem in chocoboInput.list)
                 {
                     var iconIdOrCategoryId = chocoboItem.categoryId;
-                    var furniture = HousingPos.Data.GetExcelSheet<HousingFurniture>().GetRow(iconIdOrCategoryId + 0x30000);
+                    Nullable<HousingFurniture> furniture = HousingPos.Data.GetExcelSheet<HousingFurniture>().GetRow(iconIdOrCategoryId + 0x30000);
                     if (furniture == null)
                     {
                         oldSave = true;
@@ -667,7 +668,7 @@ namespace HousingPos.Gui
                         }
                         furniture = HousingPos.Data.GetExcelSheet<HousingFurniture>().GetRow((uint)furnitureId);
                     }
-                    var item = furniture.Item.Value;
+                    var item = furniture.Value.Item.Value;
                     int len = chocoboItem.count;
                     for (int i = 0; i < len; i++)
                     {
@@ -678,7 +679,7 @@ namespace HousingPos.Gui
                         if (float.IsNaN(rotation))
                             rotation = 0;
                         Config.HousingItemList.Add(new HousingItem(
-                            furniture.RowId, furniture.ModelKey, item.RowId, 0, x, y, z, rotation, item.Name));
+                            furniture.Value.RowId, furniture.Value.ModelKey, item.RowId, 0, x, y, z, rotation, item.Name.ToString()));
                         successed++;
                     }
                     Config.ResetRecord();
@@ -701,14 +702,21 @@ namespace HousingPos.Gui
         private void DrawImportRow(int i, CloudMap cloudMap)
         {
             string uniqueId = i.ToString();
+            string territoryName = "";
+            try
+            {
+                territoryName = HousingPos.Data.GetExcelSheet<TerritoryType>().GetRow((uint)cloudMap.LocationId).PlaceName.Value.Name.ToString();
+            } catch (ArgumentOutOfRangeException)
+            {
+                territoryName = _localizer.Localize("Unknown");
+            }
             ImGui.Text($"{cloudMap.Name}"); ImGui.NextColumn();
-            var territoryName = HousingPos.Data.GetExcelSheet<TerritoryType>().GetRow((uint)cloudMap.LocationId)?.PlaceName?.Value.Name;
-            ImGui.Text(territoryName ?? _localizer.Localize("Unknown")); ImGui.NextColumn();
+            ImGui.Text(territoryName); ImGui.NextColumn();
             ImGui.Text($"{cloudMap.Tags}"); ImGui.NextColumn();
             if (ImGui.Button(_localizer.Localize("Import") + "##" + uniqueId))
             {
                 Config.LocationId = cloudMap.LocationId;
-                PluginLog.Log(cloudMap.Hash);
+                HousingPos.PluginLog.Info("CloudMap Hash: {0}", cloudMap.Hash);
                 if (cloudMap.Hash != "")
                 {
                     Task<string> cloudItems = HttpPost.GetItems(Config.DefaultCloudUri, cloudMap.Hash);

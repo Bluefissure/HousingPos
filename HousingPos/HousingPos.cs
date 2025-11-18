@@ -11,7 +11,6 @@ using System.Runtime.InteropServices;
 using Dalamud.Game;
 using Dalamud.Hooking;
 using HousingPos.Gui;
-using ImGuiScene;
 using Dalamud.IoC;
 using Dalamud.Game.ClientState;
 using Dalamud.Data;
@@ -56,8 +55,6 @@ namespace HousingPos
         public static IPluginLog PluginLog { get; private set; }
         [PluginService]
         public static ITextureProvider Tex { get; private set; }
-        [PluginService]
-        public static IGameNetwork Network { get; private set; }
         [PluginService]
         public static ICondition Condition { get; private set; }
 
@@ -394,9 +391,9 @@ namespace HousingPos
                 byte[] tmpArr = new byte[24];
                 Array.Copy(posArr, i, tmpArr, 0, 24);
                 PluginLog.Info($"{item.Name}:" + (BitConverter.ToString(tmpArr).Replace("-", " ")));
-                if (furniture.CustomTalk.Row > 0 || furniture.Item.Value.Name.ToString().EndsWith("空白隔离墙"))
+                if (furniture.CustomTalk.RowId > 0 || furniture.Item.Value.Name.ToString().EndsWith("空白隔离墙"))
                 {
-                    string talk = furniture.CustomTalk.Value.Name;
+                    string talk = furniture.CustomTalk.Value.Name.ToString();
                     PluginLog.Info($"FurnitureTalk {furniture.Item.Value.Name}: {talk}");
                     PluginLog.Info(BitConverter.ToString(tmpArr).Replace("-", " "));
                 }

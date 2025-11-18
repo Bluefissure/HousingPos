@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Dalamud.Plugin;
 using Dalamud.Game.Text;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using HousingPos.Objects;
 using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
@@ -64,7 +64,7 @@ namespace HousingPos.Gui
             if (icon < 65000)
             {
                 var tex = HousingPos.Tex.GetFromGameIcon(new GameIconLookup(icon));
-                if (tex == null || tex.GetWrapOrEmpty().ImGuiHandle == IntPtr.Zero)
+                if (tex == null || tex.GetWrapOrEmpty().Handle == IntPtr.Zero)
                 {
                     ImGui.PushStyleColor(ImGuiCol.Border, new Vector4(1, 0, 0, 1));
                     ImGui.BeginChild("FailedTexture", size);
@@ -73,7 +73,7 @@ namespace HousingPos.Gui
                     ImGui.PopStyleColor();
                 }
                 else
-                    ImGui.Image(tex.GetWrapOrEmpty().ImGuiHandle, size);
+                    ImGui.Image(tex.GetWrapOrEmpty().Handle, size);
             }
         }
         #endregion
@@ -834,7 +834,7 @@ namespace HousingPos.Gui
                     ImGui.Text(_localizer.Localize("Upload Name:"));
                     ImGui.SameLine();
                     ImGui.SetNextItemWidth(ImGui.GetWindowWidth() - ImGui.CalcTextSize(_localizer.Localize("Upload Name:")).X - (16 * ImGui.GetIO().FontGlobalScale));
-                    ImGui.InputText("##UploadName", ref Config.UploadName, buf_size);
+                    ImGui.InputText("##UploadName", ref Config.UploadName, (int)buf_size);
                     if (Config.Tags.Count() == 0)
                     {
                         Config.Tags = new List<string>() { _localizer.Localize("Combination"),
@@ -898,7 +898,7 @@ namespace HousingPos.Gui
                         ImGui.Text(_localizer.Localize("Uploader:"));
                         ImGui.SameLine();
                         ImGui.SetNextItemWidth(ImGui.GetWindowWidth() - ImGui.CalcTextSize(_localizer.Localize("Uploader:")).X - (16 * ImGui.GetIO().FontGlobalScale));
-                        ImGui.InputText("##Uploader", ref Config.Uploader, buf_size);
+                        ImGui.InputText("##Uploader", ref Config.Uploader, (int)buf_size);
                     }
                     else
                         Config.Uploader = "Anonymous";
